@@ -52,6 +52,7 @@ dependencies:
   http: ^1.3.0
   shared_preferences: ^2.5.2
   provider: ^6.1.2
+  flutter_launcher_icons: "^0.14.3"
 
 dev_dependencies:
   flutter_test:
@@ -66,7 +67,10 @@ dev_dependencies:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
-
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/vona_logo.png"
 # The following section is specific to Flutter packages.
 flutter:
   # The following line ensures that the Material Icons font is
