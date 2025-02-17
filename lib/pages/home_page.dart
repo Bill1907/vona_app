@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dashboard/diary_dashboard_page.dart';
 import 'chat/ai_voice_chat_page.dart';
 import 'diary/diary_list_page.dart';
 import 'profile/profile_settings_page.dart';
+import 'realtime/realtime_communication_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,18 +15,21 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
-
-  final List<Widget> _pages = const [
-    DiaryDashboardPage(),
-    AiVoiceChatPage(),
-    DiaryListPage(),
-    ProfileSettingsPage(),
-  ];
+  final supabase = Supabase.instance.client;
 
   @override
   Widget build(BuildContext context) {
+    final userId = supabase.auth.currentUser?.id;
+    final List<Widget> pages = [
+      const DiaryDashboardPage(),
+      const AiVoiceChatPage(),
+      if (userId != null) RealtimeCommunicationPage(userId: userId),
+      const DiaryListPage(),
+      const ProfileSettingsPage(),
+    ];
+
     return Scaffold(
-      body: _pages[_currentIndex],
+      body: pages[_currentIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: (index) {
@@ -40,6 +45,10 @@ class _HomePageState extends State<HomePage> {
           NavigationDestination(
             icon: Icon(Icons.chat),
             label: 'AI Chat',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.graphic_eq),
+            label: 'Realtime',
           ),
           NavigationDestination(
             icon: Icon(Icons.book),
