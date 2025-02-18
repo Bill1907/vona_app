@@ -9,6 +9,9 @@ import 'core/theme/theme_service.dart';
 import 'pages/auth/auth_page.dart';
 import 'pages/auth/verify_email_page.dart';
 import 'pages/auth/email_verification_success_page.dart';
+import 'pages/auth/email_sign_in_page.dart';
+import 'pages/auth/forgot_password_page.dart';
+import 'pages/auth/sign_up_page.dart';
 import 'pages/home_page.dart';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -54,6 +57,7 @@ class MyApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             themeMode: themeService.themeMode,
             theme: ThemeData(
+              fontFamily: 'Poppins',
               colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
               useMaterial3: true,
             ),
@@ -71,6 +75,9 @@ class MyApp extends StatelessWidget {
               '/auth': (context) => const AuthPage(),
               '/home': (context) => const HomePage(),
               '/verify-email': (context) => const VerifyEmailPage(),
+              '/email-sign-in': (context) => const EmailSignInPage(),
+              '/forgot-password': (context) => const ForgotPasswordPage(),
+              '/sign-up': (context) => const SignUpPage(),
               '/auth/verify-email/confirmation': (context) =>
                   const EmailVerificationSuccessPage(),
               '/reset-password': (context) => WebViewPage(

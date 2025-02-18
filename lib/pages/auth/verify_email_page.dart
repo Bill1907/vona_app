@@ -26,20 +26,30 @@ class VerifyEmailPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
+                  fontFamily: 'Poppins',
                 ),
               ),
               const SizedBox(height: 16),
               const Text(
                 'We have sent a verification link to your email.\nPlease check your email and click the link.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontFamily: 'Poppins',
+                ),
               ),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pushReplacementNamed('/auth');
                 },
-                child: const Text('Return to Login'),
+                child: const Text(
+                  'Return to Login',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
               ),
             ],
           ),
