@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:vona_app/core/models/journal.dart';
 import 'package:vona_app/core/supabase/journal_service.dart';
+import 'package:vona_app/widgets/fade_bottom_scroll_view.dart';
+import 'dart:math';
 
 class DiaryDashboardPage extends StatefulWidget {
   const DiaryDashboardPage({super.key});
@@ -71,27 +73,46 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              _buildMonthSelector(),
-              const SizedBox(height: 16),
-              if (_isLoading)
-                const Center(
-                  child: CircularProgressIndicator(),
-                )
-              else
-                Column(
-                  children: [
-                    _buildProgressCard(),
-                    const SizedBox(height: 16),
-                    _buildJournalStatsCard(),
-                  ],
-                ),
-            ],
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: const Text(
+          'Dashboard',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 17,
+            fontFamily: 'Poppins',
+            letterSpacing: -0.3,
+          ),
+        ),
+        elevation: 0,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      ),
+      body: FadeBottomScrollView(
+        fadeHeight: 100,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  _buildMonthSelector(),
+                  const SizedBox(height: 16),
+                  if (_isLoading)
+                    const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  else
+                    Column(
+                      children: [
+                        _buildProgressCard(),
+                        const SizedBox(height: 16),
+                        _buildJournalStatsCard(),
+                      ],
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -99,17 +120,14 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
   }
 
   Widget _buildMonthSelector() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          SizedBox(
+            width: 40,
+            child: IconButton(
               icon: const Icon(Icons.chevron_left),
               onPressed: () {
                 _onMonthChanged(
@@ -120,8 +138,15 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
                   ),
                 );
               },
+              constraints: const BoxConstraints(
+                minWidth: 40,
+                minHeight: 40,
+              ),
+              padding: EdgeInsets.zero,
             ),
-            GestureDetector(
+          ),
+          Expanded(
+            child: GestureDetector(
               onTap: () async {
                 final lastDate = DateTime(2025, 12, 31);
                 final firstDate = DateTime(2020, 1, 1);
@@ -145,15 +170,38 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
                   _onMonthChanged(picked);
                 }
               },
-              child: Text(
-                '${_getMonthName(_selectedDate.month)} ${_selectedDate.year}',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+              child: RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: _getMonthName(_selectedDate.month),
+                      style: const TextStyle(
+                        fontSize: 34,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Poppins',
+                        color: Color(0xFFF1F1F1),
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    TextSpan(
+                      text: ' ${_selectedDate.year}',
+                      style: const TextStyle(
+                        fontSize: 34,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Pretendard',
+                        color: Color(0xFFF1F1F1),
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-            IconButton(
+          ),
+          SizedBox(
+            width: 40,
+            child: IconButton(
               icon: const Icon(Icons.chevron_right),
               onPressed: () {
                 _onMonthChanged(
@@ -164,9 +212,14 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
                   ),
                 );
               },
+              constraints: const BoxConstraints(
+                minWidth: 40,
+                minHeight: 40,
+              ),
+              padding: EdgeInsets.zero,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -187,80 +240,112 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
     final completedDays = uniqueDates.length;
     final progress = ((completedDays / daysInMonth) * 100).toInt();
 
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Your progress',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            letterSpacing: -0.3,
+            fontFamily: 'Poppins',
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            const Text(
-              'Your progress',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+            TweenAnimationBuilder<double>(
+              duration: const Duration(milliseconds: 1500),
+              curve: Curves.easeOutCubic,
+              tween: Tween<double>(
+                begin: 0,
+                end: progress.toDouble(),
               ),
+              builder: (context, value, child) {
+                return Text(
+                  '${value.toInt()}%',
+                  style: const TextStyle(
+                    fontSize: 34,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -0.3,
+                    fontFamily: 'Pretendard',
+                  ),
+                );
+              },
             ),
-            const SizedBox(height: 8),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                TweenAnimationBuilder<double>(
-                  duration: const Duration(milliseconds: 1500),
-                  curve: Curves.easeOutCubic,
-                  tween: Tween<double>(
-                    begin: 0,
-                    end: progress.toDouble(),
-                  ),
-                  builder: (context, value, child) {
-                    return Text(
-                      '${value.toInt()}%',
-                      style: const TextStyle(
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    );
-                  },
-                ),
-                Expanded(
-                  child: Container(
-                    alignment: Alignment.bottomRight,
-                    child: Text(
-                      'Of the monthly\njournal completed',
-                      textAlign: TextAlign.right,
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        height: 1.2,
-                      ),
-                    ),
+            Expanded(
+              child: Container(
+                alignment: Alignment.bottomRight,
+                child: Text(
+                  'Of the monthly journal completed',
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    height: 1.3,
+                    fontFamily: 'Poppins',
+                    letterSpacing: -0.3,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                SizedBox(
-                  width: 100,
-                  height: 100,
-                  child: Text(
-                    _getMonthName(_selectedDate.month),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                _buildCalendarGrid(),
-              ],
+              ),
             ),
           ],
         ),
-      ),
+        const SizedBox(height: 24),
+        TweenAnimationBuilder<double>(
+          duration: const Duration(milliseconds: 1500),
+          curve: Curves.easeOutCubic,
+          tween: Tween<double>(
+            begin: 0,
+            end: progress / 100,
+          ),
+          builder: (context, value, child) {
+            return Container(
+              height: 24,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: const Color(0xFF787880),
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: FractionallySizedBox(
+                widthFactor: value,
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        Color(0xFF3A70EF),
+                        Color(0xFF6290FF),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 24),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'History',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Poppins',
+                letterSpacing: -0.3,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _buildCalendarGrid(),
+          ],
+        ),
+      ],
     );
   }
 
@@ -311,78 +396,136 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
     weeks.add(currentWeek);
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: const [
-              SizedBox(
-                  width: 20,
-                  child: Text('M',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12))),
-              SizedBox(
-                  width: 24,
-                  child: Text('T',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12))),
-              SizedBox(
-                  width: 24,
-                  child: Text('W',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12))),
-              SizedBox(
-                  width: 24,
-                  child: Text('T',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12))),
-              SizedBox(
-                  width: 24,
-                  child: Text('F',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12))),
-              SizedBox(
-                  width: 24,
-                  child: Text('S',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12, color: Colors.blue))),
-              SizedBox(
-                  width: 20,
-                  child: Text('S',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12, color: Colors.red))),
-            ],
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: const [
+            SizedBox(
+                width: 44,
+                child: Text('MON',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF747474),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Poppins',
+                      letterSpacing: -0.3,
+                    ))),
+            SizedBox(width: 8),
+            SizedBox(
+                width: 44,
+                child: Text('TUE',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF747474),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Poppins',
+                      letterSpacing: -0.3,
+                    ))),
+            SizedBox(width: 8),
+            SizedBox(
+                width: 44,
+                child: Text('WED',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF747474),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Poppins',
+                      letterSpacing: -0.3,
+                    ))),
+            SizedBox(width: 8),
+            SizedBox(
+                width: 44,
+                child: Text('THU',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF747474),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Poppins',
+                      letterSpacing: -0.3,
+                    ))),
+            SizedBox(width: 8),
+            SizedBox(
+                width: 44,
+                child: Text('FRI',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF747474),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Poppins',
+                      letterSpacing: -0.3,
+                    ))),
+            SizedBox(width: 8),
+            SizedBox(
+                width: 44,
+                child: Text('SAT',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF747474),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Poppins',
+                      letterSpacing: -0.3,
+                    ))),
+            SizedBox(width: 8),
+            SizedBox(
+                width: 44,
+                child: Text('SUN',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF747474),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Poppins',
+                      letterSpacing: -0.3,
+                    ))),
+          ],
         ),
+        const SizedBox(height: 12),
         ...weeks.map((week) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: week.map((day) {
-                if (day == null) {
-                  return Container(
-                    width: 20,
-                    height: 20,
-                    margin: const EdgeInsets.only(right: 4),
-                  );
-                }
-                final isCompleted = _monthlyJournals
-                    .any((journal) => journal.createdAt.day == day);
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: week.map((day) {
+              if (day == null) {
                 return Container(
-                  width: 20,
-                  height: 20,
-                  margin: const EdgeInsets.only(right: 4),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: isCompleted
-                        ? const Color.fromARGB(200, 58, 112, 239)
-                        : const Color.fromARGB(40, 58, 112, 239),
-                  ),
+                  width: 44,
+                  height: 44,
+                  margin: const EdgeInsets.only(right: 8, bottom: 8),
                 );
-              }).toList(),
-            ),
+              }
+              final isCompleted = _monthlyJournals
+                  .any((journal) => journal.createdAt.day == day);
+              return Container(
+                width: 44,
+                height: 44,
+                margin: const EdgeInsets.only(right: 8, bottom: 8),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isCompleted
+                      ? const Color(0xFF3A70EF)
+                      : const Color(0xFF787880),
+                ),
+                child: Center(
+                  child: Text(
+                    day.toString(),
+                    style: TextStyle(
+                      color: isCompleted
+                          ? const Color(0xFFFEFEFE)
+                          : const Color(0xFFA3A3A3),
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'Pretendard',
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
           );
         }),
       ],
@@ -390,7 +533,8 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
   }
 
   Widget _buildJournalStatsCard() {
-    final emotions = ['neutral', 'happy', 'sad', 'angry'];
+    final emotions = _monthlyJournals.map((j) => j.emotion).toSet().toList();
+
     final emotionCounts = {
       for (final e in emotions)
         e: _monthlyJournals.where((j) => j.emotion == e).length
@@ -398,109 +542,98 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
 
     final maxCount = emotionCounts.values.reduce((a, b) => a > b ? a : b);
 
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Journal Stats',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  'for ${_getMonthName(_selectedDate.month)} ${_selectedDate.year}',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              height: 240,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  _buildEmotionBar('neutral', Colors.lightGreen,
-                      maxCount == 0 ? 0 : emotionCounts['neutral']! / maxCount),
-                  _buildEmotionBar('happy', Colors.yellow,
-                      maxCount == 0 ? 0 : emotionCounts['happy']! / maxCount),
-                  _buildEmotionBar('sad', Colors.blue[200]!,
-                      maxCount == 0 ? 0 : emotionCounts['sad']! / maxCount),
-                  _buildEmotionBar('angry', Colors.red[200]!,
-                      maxCount == 0 ? 0 : emotionCounts['angry']! / maxCount),
-                ],
+            const Text(
+              'Journal Stats',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Poppins',
+                letterSpacing: -0.3,
               ),
             ),
           ],
         ),
-      ),
+        const SizedBox(height: 20),
+        Column(
+          children: emotionCounts.entries.map((entry) {
+            return _buildEmotionBar(
+                entry.key,
+                Color((Random().nextDouble() * 0xFFFFFF).toInt())
+                    .withAlpha(255),
+                maxCount == 0 ? 0 : entry.value / maxCount);
+          }).toList(),
+        ),
+      ],
     );
   }
 
   Widget _buildEmotionBar(String emotion, Color color, double percentage) {
     final count = _monthlyJournals.where((j) => j.emotion == emotion).length;
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Stack(
-              alignment: Alignment.topCenter,
-              children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 1000),
-                  curve: Curves.easeInOut,
-                  height: _showBarAnimation ? 200 * percentage : 0,
-                  width: 40,
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                emotion,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF747474),
+                  fontFamily: 'Poppins',
+                  letterSpacing: -0.3,
                 ),
-                AnimatedOpacity(
-                  duration: const Duration(milliseconds: 1000),
-                  opacity: _showBarAnimation ? 1.0 : 0.0,
-                  child: Container(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          count.toString(),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black54,
-                          ),
-                        ),
-                        Text(
-                          emotion,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.black54,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+              ),
+              Text(
+                '$count journals',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF747474),
+                  fontFamily: 'Poppins',
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Stack(
+            children: [
+              Container(
+                height: 24,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF787880),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 1000),
+                curve: Curves.easeInOut,
+                height: 24,
+                width: _showBarAnimation ? 300 * percentage : 0,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      color,
+                      color.withAlpha(170),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
