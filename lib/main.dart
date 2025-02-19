@@ -58,14 +58,15 @@ class MyApp extends StatelessWidget {
             themeMode: themeService.themeMode,
             theme: ThemeData(
               fontFamily: 'Poppins',
-              colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+              colorScheme:
+                  ColorScheme.fromSeed(seedColor: const Color(0xFF3A70EF)),
               useMaterial3: true,
             ),
             darkTheme: ThemeData.dark(
               useMaterial3: true,
             ).copyWith(
               colorScheme: ColorScheme.fromSeed(
-                seedColor: Colors.deepPurple,
+                seedColor: const Color(0xFF3A70EF),
                 brightness: Brightness.dark,
               ),
             ),

@@ -90,7 +90,16 @@ class _DiaryListPageState extends State<DiaryListPage> {
     }
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      appBar: AppBar(
+        title: const Text('Journals',
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Poppins',
+            )),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+      ),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [

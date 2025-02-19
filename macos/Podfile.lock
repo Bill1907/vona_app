@@ -7,6 +7,11 @@ PODS:
   - AppAuth/Core (1.7.6)
   - AppAuth/ExternalUserAgent (1.7.6):
     - AppAuth/Core
+  - file_selector_macos (0.0.1):
+    - FlutterMacOS
+  - flutter_webrtc (0.12.6):
+    - FlutterMacOS
+    - WebRTC-SDK (= 125.6422.06)
   - FlutterMacOS (1.0.0)
   - google_sign_in_ios (0.0.1):
     - AppAuth (>= 1.7.4)
@@ -39,12 +44,15 @@ PODS:
     - FlutterMacOS
   - url_launcher_macos (0.0.1):
     - FlutterMacOS
+  - WebRTC-SDK (125.6422.06)
   - webview_flutter_wkwebview (0.0.1):
     - Flutter
     - FlutterMacOS
 
 DEPENDENCIES:
   - app_links (from `Flutter/ephemeral/.symlinks/plugins/app_links/macos`)
+  - file_selector_macos (from `Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos`)
+  - flutter_webrtc (from `Flutter/ephemeral/.symlinks/plugins/flutter_webrtc/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
   - google_sign_in_ios (from `Flutter/ephemeral/.symlinks/plugins/google_sign_in_ios/darwin`)
   - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin`)
@@ -60,10 +68,15 @@ SPEC REPOS:
     - GoogleSignIn
     - GTMAppAuth
     - GTMSessionFetcher
+    - WebRTC-SDK
 
 EXTERNAL SOURCES:
   app_links:
     :path: Flutter/ephemeral/.symlinks/plugins/app_links/macos
+  file_selector_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos
+  flutter_webrtc:
+    :path: Flutter/ephemeral/.symlinks/plugins/flutter_webrtc/macos
   FlutterMacOS:
     :path: Flutter/ephemeral
   google_sign_in_ios:
@@ -84,6 +97,8 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   app_links: 10e0a0ab602ffaf34d142cd4862f29d34b303b2a
   AppAuth: d4f13a8fe0baf391b2108511793e4b479691fb73
+  file_selector_macos: cc3858c981fe6889f364731200d6232dac1d812d
+  flutter_webrtc: d55fd3f5c75b42940b6b4b2cf376a5797398d1f8
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
   google_sign_in_ios: 07375bfbf2620bc93a602c0e27160d6afc6ead38
   GoogleSignIn: d4281ab6cf21542b1cfaff85c191f230b399d2db
@@ -94,6 +109,7 @@ SPEC CHECKSUMS:
   sign_in_with_apple: a9e97e744e8edc36aefc2723111f652102a7a727
   sqflite_darwin: 5a7236e3b501866c1c9befc6771dfd73ffb8702d
   url_launcher_macos: c82c93949963e55b228a30115bd219499a6fe404
+  WebRTC-SDK: 79942c006ea64f6fb48d7da8a4786dfc820bc1db
   webview_flutter_wkwebview: 0982481e3d9c78fd5c6f62a002fcd24fc791f1e4
 
 PODFILE CHECKSUM: 9ebaf0ce3d369aaa26a9ea0e159195ed94724cf3
