@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dashboard/diary_dashboard_page.dart';
-import 'chat/ai_voice_chat_page.dart';
 import 'diary/diary_list_page.dart';
 import 'profile/profile_settings_page.dart';
 import 'realtime/realtime_communication_page.dart';
@@ -22,7 +21,6 @@ class _HomePageState extends State<HomePage> {
     final userId = supabase.auth.currentUser?.id;
     final List<Widget> pages = [
       const DiaryDashboardPage(),
-      const AiVoiceChatPage(),
       if (userId != null) RealtimeCommunicationPage(userId: userId),
       const DiaryListPage(),
       const ProfileSettingsPage(),
@@ -41,10 +39,6 @@ class _HomePageState extends State<HomePage> {
           NavigationDestination(
             icon: Icon(Icons.dashboard),
             label: 'Dashboard',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.chat),
-            label: 'AI Chat',
           ),
           NavigationDestination(
             icon: Icon(Icons.graphic_eq),

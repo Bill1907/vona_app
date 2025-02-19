@@ -176,21 +176,25 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
                   children: [
                     TextSpan(
                       text: _getMonthName(_selectedDate.month),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 34,
                         fontWeight: FontWeight.w600,
                         fontFamily: 'Poppins',
-                        color: Color(0xFFF1F1F1),
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? const Color(0xFFF1F1F1)
+                            : const Color(0xFF1A1A1A),
                         letterSpacing: -0.3,
                       ),
                     ),
                     TextSpan(
                       text: ' ${_selectedDate.year}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 34,
                         fontWeight: FontWeight.w600,
                         fontFamily: 'Pretendard',
-                        color: Color(0xFFF1F1F1),
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? const Color(0xFFF1F1F1)
+                            : const Color(0xFF1A1A1A),
                         letterSpacing: -0.3,
                       ),
                     ),
@@ -540,7 +544,9 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
         e: _monthlyJournals.where((j) => j.emotion == e).length
     };
 
-    final maxCount = emotionCounts.values.reduce((a, b) => a > b ? a : b);
+    final maxCount = emotionCounts.isEmpty
+        ? 0
+        : emotionCounts.values.reduce((a, b) => a > b ? a : b);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
