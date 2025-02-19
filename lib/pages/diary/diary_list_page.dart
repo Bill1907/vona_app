@@ -5,6 +5,7 @@ import 'package:vona_app/core/supabase/journal_service.dart';
 import 'package:vona_app/pages/diary/components/date_selector.dart';
 import 'package:vona_app/pages/diary/components/journal_card.dart';
 import 'package:vona_app/pages/diary/diary_detail_page.dart';
+import 'package:vona_app/widgets/fade_bottom_scroll_view.dart';
 
 import 'dart:math' as math;
 
@@ -90,61 +91,76 @@ class _DiaryListPageState extends State<DiaryListPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Journals',
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Poppins',
-            )),
+        appBar: AppBar(
+          title: const Text('Journals',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Poppins',
+              )),
+          backgroundColor: Theme.of(context).colorScheme.surface,
+        ),
         backgroundColor: Theme.of(context).colorScheme.surface,
-      ),
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      body: SafeArea(
-        child: Column(
-          children: [
-            DateSelector(
-              selectedDate: _selectedDate,
-              onDateSelected: (date) {
-                setState(() {
-                  _selectedDate = date;
-                });
-                _scrollToSelectedDate();
-              },
-            ),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: _loadJournals,
-                child: ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _journals.length,
-                  itemBuilder: (context, index) {
-                    final journal = _journals[index];
-                    final isSelected =
-                        journal.createdAt.year == _selectedDate.year &&
-                            journal.createdAt.month == _selectedDate.month &&
-                            journal.createdAt.day == _selectedDate.day;
-                    return JournalCard(
-                      journal: journal,
-                      isSelected: isSelected,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                DiaryDetailPage(journal: journal),
-                          ),
-                        );
-                      },
-                    );
+        body: FadeBottomScrollView(
+          fadeHeight: 100,
+          child: SafeArea(
+            child: Column(
+              children: [
+                DateSelector(
+                  selectedDate: _selectedDate,
+                  onDateSelected: (date) {
+                    setState(() {
+                      _selectedDate = date;
+                    });
+                    _scrollToSelectedDate();
                   },
                 ),
-              ),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 16),
+                    child: Text('History',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Poppins',
+                        )),
+                  ),
+                ),
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: _loadJournals,
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.all(8),
+                      itemCount: _journals.length,
+                      itemBuilder: (context, index) {
+                        final journal = _journals[index];
+                        final isSelected = journal.createdAt.year ==
+                                _selectedDate.year &&
+                            journal.createdAt.month == _selectedDate.month &&
+                            journal.createdAt.day == _selectedDate.day;
+                        return JournalCard(
+                          journal: journal,
+                          isSelected: isSelected,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    DiaryDetailPage(journal: journal),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
+          ),
+        ));
   }
 }

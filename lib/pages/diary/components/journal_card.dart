@@ -30,41 +30,62 @@ class JournalCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Icon(
-                    EmotionHelper.getEmotionIcon(journal.emotion),
-                    color: EmotionHelper.getEmotionColor(journal.emotion),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    journal.createdAt.toString().substring(0, 10),
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                journal.summary,
-                style: Theme.of(context).textTheme.bodyLarge,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
                 children: journal.keywords
                     .map((keyword) => Chip(
-                          label: Text(keyword),
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primaryContainer,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 11,
+                            vertical: 4,
+                          ),
+                          label: Text(keyword,
+                              style: const TextStyle(
+                                color: Color(0xFFE2E2E2),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                fontFamily: 'Poppins',
+                                letterSpacing: -0.03,
+                              )),
                           labelStyle: TextStyle(
                             color: Theme.of(context)
                                 .colorScheme
                                 .onPrimaryContainer,
                           ),
+                          side: BorderSide(
+                            color: Color(0xFF3A70EF),
+                            width: 1,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50),
+                          ),
                         ))
                     .toList(),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                journal.summary,
+                style: const TextStyle(
+                  color: Color(0xFFE2E2E2),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  fontFamily: 'Poppins',
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Text(
+                    journal.createdAt.toString().substring(0, 10),
+                    style: const TextStyle(
+                      color: Color(0xFF7F7F7F),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      fontFamily: 'Pretendard',
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
