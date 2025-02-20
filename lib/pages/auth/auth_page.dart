@@ -94,36 +94,11 @@ class _AuthPageState extends State<AuthPage> {
                     fontFamily: 'Poppins',
                     fontWeight: FontWeight.w800,
                     color: Color(0xFFF1F1F1),
+                    letterSpacing: -0.3,
                   ),
                 ),
               ),
               const SizedBox(height: 54),
-              OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).pushNamed('/email-sign-in');
-                },
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  backgroundColor: const Color(0xFF4285F4),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                ),
-                icon: const Icon(
-                  Icons.email_outlined,
-                  color: Colors.white,
-                ),
-                label: const Text(
-                  'Sign in with Email',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
               OutlinedButton.icon(
                 onPressed: _signInWithGoogle,
                 style: OutlinedButton.styleFrom(
@@ -144,6 +119,7 @@ class _AuthPageState extends State<AuthPage> {
                     fontFamily: 'Poppins',
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF202020),
+                    letterSpacing: -0.3,
                   ),
                 ),
               ),
@@ -168,10 +144,33 @@ class _AuthPageState extends State<AuthPage> {
                       fontFamily: 'Poppins',
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
+                      letterSpacing: -0.3,
                     ),
                   ),
                 ),
               ],
+              const SizedBox(height: 24),
+              TextButton.icon(
+                onPressed: () {
+                  Navigator.of(context).pushNamed('/email-sign-in');
+                },
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                ),
+                label: const Text(
+                  'Sign in with Email',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFFA9A9A9),
+                    letterSpacing: -0.3,
+                  ),
+                ),
+              ),
               const SizedBox(height: 24),
               if (_isLoading)
                 const Center(child: CircularProgressIndicator())

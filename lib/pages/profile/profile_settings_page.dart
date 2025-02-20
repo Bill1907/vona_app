@@ -73,12 +73,28 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to logout?'),
+        title: const Text(
+          'Logout',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: const Text(
+          'Are you sure you want to logout?',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+              ),
+            ),
           ),
           TextButton(
             onPressed: () async {
@@ -87,7 +103,12 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                 Navigator.of(context).pushReplacementNamed('/auth');
               }
             },
-            child: const Text('Logout'),
+            child: const Text(
+              'Logout',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+              ),
+            ),
           ),
         ],
       ),
@@ -98,13 +119,28 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Account'),
+        title: const Text(
+          'Delete Account',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         content: const Text(
-            'Are you sure you want to delete your account? This action cannot be undone.'),
+          'Are you sure you want to delete your account? This action cannot be undone.',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+              ),
+            ),
           ),
           TextButton(
             onPressed: () {
@@ -112,7 +148,12 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
               Navigator.pop(context);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: const Text(
+              'Delete',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+              ),
+            ),
           ),
         ],
       ),
@@ -129,7 +170,16 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: const Text(
+          'Profile',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.w600,
+            fontSize: 17,
+            color: Color(0xFFffffff),
+            letterSpacing: -0.3,
+          ),
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -148,31 +198,27 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                       ? const Icon(Icons.person)
                       : null,
                 ),
-                title: Text(_profile?['username'] ?? 'User'),
+                title: Text(
+                  _profile?['username'] ?? 'User',
+                  style: const TextStyle(
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
                 subtitle: Text(
                   AuthService.currentUserEmail ?? 'No email',
+                  style: const TextStyle(
+                    fontFamily: 'Poppins',
+                  ),
                 ),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: _navigateToAccountDetails,
               ),
               const Divider(),
 
-              // // Subscribe Section
-              // _buildSectionTitle('Subscription'),
-              // ListTile(
-              //   leading: const Icon(Icons.star),
-              //   title: const Text('Current Plan'),
-              //   subtitle:
-              //       const Text('Free'), // TODO: Implement actual plan check
-              //   trailing: const Icon(Icons.chevron_right),
-              //   onTap: _navigateToSubscriptionDetails,
-              // ),
-              // const Divider(),
-
               // Etc Section
               _buildSectionTitle('Others'),
               _buildSettingsTile(
-                icon: Icons.dark_mode,
                 title: 'Dark Mode',
                 trailing: Switch(
                   value: context.watch<ThemeService>().isDarkMode,
@@ -182,27 +228,18 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                 ),
                 showChevron: false,
               ),
-              // _buildSettingsTile(
-              //   icon: Icons.announcement,
-              //   title: 'Announcements',
-              //   onTap: () {/* TODO: Navigate to notices */},
-              // ),
-              // _buildSettingsTile(
-              //   icon: Icons.help,
-              //   title: 'FAQ/Support',
-              //   onTap: () {/* TODO: Navigate to FAQ */},
-              // ),
               _buildSettingsTile(
-                icon: Icons.info,
                 title: 'App Version',
                 trailing: const Text(
                   'v1.0.0',
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontFamily: 'Poppins',
+                  ),
                 ),
                 showChevron: false,
               ),
               _buildSettingsTile(
-                icon: Icons.privacy_tip,
                 title: 'Privacy Policy',
                 onTap: () {
                   Navigator.push(
@@ -214,18 +251,15 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                 },
               ),
               _buildSettingsTile(
-                icon: Icons.description,
                 title: 'Terms of Service',
                 onTap: () {/* TODO: Navigate to terms */},
               ),
               const Divider(thickness: 1),
               _buildSettingsTile(
-                icon: Icons.logout,
                 title: 'Logout',
                 onTap: _showLogoutDialog,
               ),
               _buildSettingsTile(
-                icon: Icons.delete_forever,
                 title: 'Delete Account',
                 titleColor: Colors.red,
                 onTap: _showDeleteAccountDialog,
@@ -243,16 +277,17 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
       child: Text(
         title,
         style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey,
+          fontSize: 17,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFFE2E2E2),
+          fontFamily: 'Poppins',
+          letterSpacing: -0.3,
         ),
       ),
     );
   }
 
   Widget _buildSettingsTile({
-    required IconData icon,
     required String title,
     Widget? trailing,
     Color? titleColor,
@@ -260,10 +295,13 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
     VoidCallback? onTap,
   }) {
     return ListTile(
-      leading: Icon(icon),
       title: Text(
         title,
-        style: TextStyle(color: titleColor),
+        style: TextStyle(
+          color: titleColor,
+          fontFamily: 'Poppins',
+          fontWeight: FontWeight.w500,
+        ),
       ),
       trailing:
           trailing ?? (showChevron ? const Icon(Icons.chevron_right) : null),

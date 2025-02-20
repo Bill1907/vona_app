@@ -26,29 +26,37 @@ class _HomePageState extends State<HomePage> {
       const ProfileSettingsPage(),
     ];
 
+    // Ensure _currentIndex is within valid range
+    if (_currentIndex >= pages.length) {
+      _currentIndex = 0;
+    }
+
     return Scaffold(
       body: pages[_currentIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: (index) {
+          // Adjust index for non-logged in users
+          final adjustedIndex = userId == null && index > 0 ? index - 1 : index;
           setState(() {
-            _currentIndex = index;
+            _currentIndex = adjustedIndex;
           });
         },
-        destinations: const [
-          NavigationDestination(
+        destinations: [
+          const NavigationDestination(
             icon: Icon(Icons.dashboard),
             label: 'Dashboard',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.graphic_eq),
-            label: 'Realtime',
-          ),
-          NavigationDestination(
+          if (userId != null)
+            const NavigationDestination(
+              icon: Icon(Icons.graphic_eq),
+              label: 'Realtime',
+            ),
+          const NavigationDestination(
             icon: Icon(Icons.book),
             label: 'Journals',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.person),
             label: 'Profile',
           ),

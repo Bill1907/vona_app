@@ -21,6 +21,8 @@ class _DiaryListPageState extends State<DiaryListPage> {
   bool _isLoading = true;
   DateTime _selectedDate = DateTime.now();
   final ScrollController _scrollController = ScrollController();
+  final DraggableScrollableController _dragController =
+      DraggableScrollableController();
 
   @override
   void initState() {
@@ -31,6 +33,7 @@ class _DiaryListPageState extends State<DiaryListPage> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _dragController.dispose();
     super.dispose();
   }
 
@@ -145,11 +148,72 @@ class _DiaryListPageState extends State<DiaryListPage> {
                           journal: journal,
                           isSelected: isSelected,
                           onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    DiaryDetailPage(journal: journal),
+                            // Scroll the card to top first
+                            _scrollController.animateTo(
+                              index *
+                                  200.0, // Approximate height of a card including margins
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+
+                            // Show modal after scrolling
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              enableDrag: true,
+                              showDragHandle: false,
+                              constraints: BoxConstraints(
+                                maxHeight:
+                                    MediaQuery.of(context).size.height * 0.95,
+                              ),
+                              builder: (context) => DraggableScrollableSheet(
+                                initialChildSize: 0.5,
+                                minChildSize: 0.5,
+                                maxChildSize: 0.95,
+                                expand: false,
+                                controller: _dragController,
+                                builder: (context, scrollController) =>
+                                    Container(
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF1A1A1A),
+                                    borderRadius: const BorderRadius.vertical(
+                                      top: Radius.circular(20),
+                                    ),
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          _dragController.animateTo(
+                                            0.95,
+                                            duration: const Duration(
+                                                milliseconds: 300),
+                                            curve: Curves.easeInOut,
+                                          );
+                                        },
+                                        child: Container(
+                                          width: 40,
+                                          height: 4,
+                                          margin: const EdgeInsets.symmetric(
+                                              vertical: 8),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF585858),
+                                            borderRadius:
+                                                BorderRadius.circular(2),
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: DiaryDetailPage(
+                                          journal: journal,
+                                          scrollController: scrollController,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             );
                           },
