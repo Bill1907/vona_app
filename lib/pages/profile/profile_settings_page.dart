@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../../core/supabase/auth_service.dart';
 import '../../core/supabase/profile_service.dart';
 import '../../core/theme/theme_service.dart';
@@ -16,11 +17,13 @@ class ProfileSettingsPage extends StatefulWidget {
 class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
   bool _loading = true;
   Map<String, dynamic>? _profile;
+  String _appVersion = '';
 
   @override
   void initState() {
     super.initState();
     _loadProfile();
+    _loadAppVersion();
   }
 
   @override
@@ -45,9 +48,30 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
         setState(() {
           _loading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load profile')),
-        );
+        // 에러 메시지를 다음 프레임에서 표시
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to load profile')),
+          );
+        });
+      }
+    }
+  }
+
+  Future<void> _loadAppVersion() async {
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      if (mounted) {
+        setState(() {
+          _appVersion = packageInfo.version;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _appVersion = '1.0.0'; // 기본 버전
+        });
+        debugPrint('Failed to load app version: $e');
       }
     }
   }
@@ -230,9 +254,9 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
               ),
               _buildSettingsTile(
                 title: 'App Version',
-                trailing: const Text(
-                  'v1.0.0',
-                  style: TextStyle(
+                trailing: Text(
+                  'v$_appVersion',
+                  style: const TextStyle(
                     color: Colors.grey,
                     fontFamily: 'Poppins',
                   ),
