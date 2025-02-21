@@ -274,10 +274,10 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                   );
                 },
               ),
-              _buildSettingsTile(
-                title: 'Terms of Service',
-                onTap: () {/* TODO: Navigate to terms */},
-              ),
+              // _buildSettingsTile(
+              //   title: 'Terms of Service',
+              //   onTap: () {},
+              // ),
               const Divider(thickness: 1),
               _buildSettingsTile(
                 title: 'Logout',
