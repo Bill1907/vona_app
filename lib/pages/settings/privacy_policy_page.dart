@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class PrivacyPolicyPage extends StatefulWidget {
   const PrivacyPolicyPage({super.key});
@@ -16,7 +17,7 @@ class _PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
     super.initState();
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadRequest(Uri.parse('https://www.heyvona.com/privacy-policy'));
+      ..loadRequest(Uri.parse('${dotenv.env['WEB_VIEW_URL']}/privacy-policy'));
   }
 
   @override

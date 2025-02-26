@@ -5,7 +5,8 @@ class Journal {
   final String? userId;
   final List<String> keywords;
   final String emotion;
-  final String summary;
+  final String title;
+  final String content;
   final String conversationId;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -15,7 +16,8 @@ class Journal {
     this.userId,
     required this.keywords,
     required this.emotion,
-    required this.summary,
+    required this.title,
+    required this.content,
     required this.conversationId,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -29,7 +31,8 @@ class Journal {
         'user_id': userId,
         'keywords': keywords,
         'emotion': emotion,
-        'summary': summary,
+        'title': title,
+        'content': content,
         'conversation_id': conversationId,
         'created_at': createdAt.toIso8601String(),
         'updated_at': updatedAt.toIso8601String(),
@@ -41,7 +44,8 @@ class Journal {
         userId: json['user_id'] as String?,
         keywords: List<String>.from(json['keywords']),
         emotion: json['emotion'] as String,
-        summary: json['summary'] as String,
+        title: json['title'] as String,
+        content: json['content'] as String,
         conversationId: json['conversation_id'] as String,
         createdAt: DateTime.parse(json['created_at'] as String),
         updatedAt: DateTime.parse(json['updated_at'] as String),
@@ -53,7 +57,8 @@ class Journal {
     String? userId,
     List<String>? keywords,
     String? emotion,
-    String? summary,
+    String? title,
+    String? content,
     String? conversationId,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -63,7 +68,8 @@ class Journal {
         userId: userId ?? this.userId,
         keywords: keywords ?? this.keywords,
         emotion: emotion ?? this.emotion,
-        summary: summary ?? this.summary,
+        title: title ?? this.title,
+        content: content ?? this.content,
         conversationId: conversationId ?? this.conversationId,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,

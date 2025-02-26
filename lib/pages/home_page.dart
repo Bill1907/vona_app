@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'dashboard/diary_dashboard_page.dart';
 import 'diary/diary_list_page.dart';
 import 'profile/profile_settings_page.dart';
@@ -35,6 +36,9 @@ class _HomePageState extends State<HomePage> {
       body: pages[_currentIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
+        height: 80,
+        backgroundColor: Colors.black,
+        indicatorColor: Colors.black,
         onDestinationSelected: (index) {
           // Adjust index for non-logged in users
           final adjustedIndex = userId == null && index > 0 ? index - 1 : index;
@@ -43,21 +47,70 @@ class _HomePageState extends State<HomePage> {
           });
         },
         destinations: [
-          const NavigationDestination(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
+          NavigationDestination(
+            icon: SvgPicture.asset(
+              'assets/icons/house_icon.svg',
+              width: 24,
+              height: 24,
+              colorFilter: const ColorFilter.mode(Colors.grey, BlendMode.srcIn),
+            ),
+            selectedIcon: SvgPicture.asset(
+              'assets/icons/house_icon.svg',
+              width: 24,
+              height: 24,
+              colorFilter:
+                  const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+            ),
+            label: 'Home',
           ),
           if (userId != null)
-            const NavigationDestination(
-              icon: Icon(Icons.graphic_eq),
-              label: 'Realtime',
+            NavigationDestination(
+              icon: SvgPicture.asset(
+                'assets/icons/voice_icon.svg',
+                width: 24,
+                height: 24,
+                colorFilter:
+                    const ColorFilter.mode(Colors.grey, BlendMode.srcIn),
+              ),
+              selectedIcon: SvgPicture.asset(
+                'assets/icons/voice_icon.svg',
+                width: 24,
+                height: 24,
+                colorFilter:
+                    const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              ),
+              label: 'Voice',
             ),
-          const NavigationDestination(
-            icon: Icon(Icons.book),
+          NavigationDestination(
+            icon: SvgPicture.asset(
+              'assets/icons/book_icon.svg',
+              width: 24,
+              height: 24,
+              colorFilter: const ColorFilter.mode(Colors.grey, BlendMode.srcIn),
+            ),
+            selectedIcon: SvgPicture.asset(
+              'assets/icons/book_icon.svg',
+              width: 24,
+              height: 24,
+              colorFilter:
+                  const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+            ),
             label: 'Journals',
           ),
-          const NavigationDestination(
-            icon: Icon(Icons.person),
+          NavigationDestination(
+            icon: SvgPicture.asset(
+              'assets/icons/user_icon.svg',
+              width: 24,
+              height: 24,
+              colorFilter: const ColorFilter.mode(Colors.grey, BlendMode.srcIn),
+            ),
+            selectedIcon: SvgPicture.asset(
+              'assets/icons/user_icon.svg',
+              width: 24,
+              height: 24,
+              colorFilter:
+                  const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+            ),
             label: 'Profile',
           ),
         ],

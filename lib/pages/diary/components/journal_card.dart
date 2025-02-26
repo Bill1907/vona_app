@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:vona_app/core/models/journal.dart';
-import 'package:vona_app/pages/diary/components/emotion_helper.dart';
 
 class JournalCard extends StatelessWidget {
   final Journal journal;
@@ -63,7 +62,7 @@ class JournalCard extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                journal.summary,
+                journal.title,
                 style: const TextStyle(
                   color: Color(0xFFE2E2E2),
                   fontSize: 14,

@@ -1,5 +1,7 @@
 import '../models/journal.dart';
 import 'client.dart';
+import 'auth_service.dart';
+import 'package:uuid/uuid.dart';
 
 class JournalService {
   static final _client = SupabaseClientWrapper.client;
@@ -14,24 +16,85 @@ class JournalService {
         .eq('user_id', userId)
         .order('created_at', ascending: false);
 
-    return (response as List)
-        .map((json) => Journal.fromJson(json as Map<String, dynamic>))
+    final journals = (response as List)
+        .map((json) {
+          try {
+            // Skip invalid entries
+            if (json['content'] == null) {
+              return null;
+            }
+
+            // Ensure required fields are present and handle null values
+            final Map<String, dynamic> safeJson = {
+              'id': json['id'] ?? const Uuid().v4(),
+              'content': json['content'], // Don't provide default for content
+              'title': json['title'] ?? 'Untitled',
+              'emotion': json['emotion'] ?? 'neutral',
+              'keywords':
+                  (json['keywords'] as List<dynamic>?)?.cast<String>() ?? [],
+              'conversation_id': json['conversation_id'] ?? '',
+              'created_at':
+                  json['created_at'] ?? DateTime.now().toIso8601String(),
+              'updated_at':
+                  json['updated_at'] ?? DateTime.now().toIso8601String(),
+              'user_id': json['user_id'] ?? '',
+            };
+
+            final journal = Journal.fromJson(safeJson);
+            return journal;
+          } catch (e, stackTrace) {
+            print('Error processing journal entry: $e');
+            print('Stack trace: $stackTrace');
+            print('Problematic journal data: $json');
+            return null; // Skip problematic entries instead of throwing
+          }
+        })
+        .where((journal) => journal != null) // Filter out null entries
+        .cast<Journal>() // Cast the non-null entries to Journal
         .toList();
+
+    print('Returning ${journals.length} valid journals');
+    return journals;
   }
 
   static Future<Journal> createJournal(Journal journal) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) throw Exception('User not authenticated');
 
-    final journalData = {
-      ...journal.toJson(),
-      'user_id': userId,
-    };
+    print('Creating journal for user: $userId');
 
-    final response =
-        await _client.from('journals').insert(journalData).select().single();
+    // Validate content
+    if (journal.content.isEmpty) {
+      throw Exception('Journal content cannot be empty');
+    }
 
-    return Journal.fromJson(response as Map<String, dynamic>);
+    // Generate new ID if not present
+    final id = journal.id.isEmpty ? const Uuid().v4() : journal.id;
+    print('Using journal ID: $id');
+
+    try {
+      print('Original content length: ${journal.content.length}');
+
+      final journalData = {
+        ...journal.toJson(),
+        'id': id,
+        'user_id': userId,
+      };
+      print('Prepared journal data for database');
+
+      print('Inserting journal into database...');
+      final response =
+          await _client.from('journals').insert(journalData).select().single();
+      print('Database response received');
+
+      final createdJournal = Journal.fromJson(response as Map<String, dynamic>);
+      print('Created journal object from response');
+
+      return createdJournal;
+    } catch (e) {
+      print('Error in journal creation: $e');
+      rethrow;
+    }
   }
 
   static Future<Journal?> getJournal(String id) async {
@@ -46,7 +109,8 @@ class JournalService {
         .maybeSingle();
 
     if (response == null) return null;
-    return Journal.fromJson(response as Map<String, dynamic>);
+    final journal = Journal.fromJson(response as Map<String, dynamic>);
+    return journal;
   }
 
   static Future<void> updateJournal(Journal journal) async {
@@ -72,6 +136,8 @@ class JournalService {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) throw Exception('User not authenticated');
 
+    print('Fetching journals for conversation: $conversationId');
+
     final response = await _client
         .from('journals')
         .select()
@@ -79,8 +145,52 @@ class JournalService {
         .eq('user_id', userId)
         .order('created_at', ascending: false);
 
-    return (response as List)
-        .map((json) => Journal.fromJson(json as Map<String, dynamic>))
+    print('Raw conversation journals response: $response');
+
+    final journals = (response as List)
+        .map((json) {
+          print('Processing conversation journal data: $json');
+          try {
+            // Skip invalid entries
+            if (json['content'] == null) {
+              print(
+                  'Skipping invalid conversation journal entry: missing content');
+              return null;
+            }
+
+            // Ensure required fields are present and handle null values
+            final Map<String, dynamic> safeJson = {
+              'id': json['id'] ?? const Uuid().v4(),
+              'content': json['content'], // Don't provide default for content
+              'title': json['title'] ?? 'Untitled',
+              'emotion': json['emotion'] ?? 'neutral',
+              'keywords':
+                  (json['keywords'] as List<dynamic>?)?.cast<String>() ?? [],
+              'conversation_id': json['conversation_id'] ?? '',
+              'created_at':
+                  json['created_at'] ?? DateTime.now().toIso8601String(),
+              'updated_at':
+                  json['updated_at'] ?? DateTime.now().toIso8601String(),
+              'user_id': json['user_id'] ?? '',
+            };
+
+            print('Safe conversation JSON prepared: $safeJson');
+            final journal = Journal.fromJson(safeJson);
+            print('Conversation journal object created successfully');
+
+            return journal;
+          } catch (e, stackTrace) {
+            print('Error processing conversation journal entry: $e');
+            print('Stack trace: $stackTrace');
+            print('Problematic conversation journal data: $json');
+            return null; // Skip problematic entries instead of throwing
+          }
+        })
+        .where((journal) => journal != null) // Filter out null entries
+        .cast<Journal>() // Cast the non-null entries to Journal
         .toList();
+
+    print('Returning ${journals.length} valid conversation journals');
+    return journals;
   }
 }

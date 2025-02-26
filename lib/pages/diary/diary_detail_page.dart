@@ -67,10 +67,35 @@ class _DiaryDetailPageState extends State<DiaryDetailPage> {
     if (_disposed) return;
 
     try {
+      print(
+          'Loading conversation for journal ID: ${widget.journal.conversationId}');
       final conversation = await ConversationService.getConversation(
           widget.journal.conversationId);
 
       if (_disposed) return;
+
+      if (conversation != null) {
+        try {
+          // Verify that the contents are valid JSON after decryption
+          final decodedContents = jsonDecode(conversation.contents);
+          if (decodedContents is! List) {
+            throw FormatException(
+                'Conversation contents are not in the expected format');
+          }
+          print('Successfully decoded conversation contents');
+        } catch (e) {
+          print('Error decoding conversation contents: $e');
+          if (!_disposed && mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Error: Could not decode conversation data'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+      }
 
       _safeSetState(() {
         _conversation = conversation;
@@ -86,7 +111,10 @@ class _DiaryDetailPageState extends State<DiaryDetailPage> {
 
       if (!_disposed && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load conversation.')),
+          const SnackBar(
+            content: Text('Failed to load conversation.'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -225,7 +253,7 @@ class _DiaryDetailPageState extends State<DiaryDetailPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Summary',
+                          'Title',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -236,7 +264,40 @@ class _DiaryDetailPageState extends State<DiaryDetailPage> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          widget.journal.summary,
+                          widget.journal.title,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Color(0xFF353535),
+                        ),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Content',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF747474),
+                            fontFamily: 'Poppins',
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          widget.journal.content,
                           style: const TextStyle(
                             fontSize: 14,
                             fontFamily: 'Poppins',
@@ -274,16 +335,33 @@ class _DiaryDetailPageState extends State<DiaryDetailPage> {
                           ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount:
-                                (jsonDecode(_conversation!.contents) as List)
-                                    .length,
+                            itemCount: _conversation != null
+                                ? (jsonDecode(_conversation!.contents) as List)
+                                    .length
+                                : 0,
                             itemBuilder: (context, index) {
-                              final messages =
-                                  jsonDecode(_conversation!.contents) as List;
+                              List<dynamic> messages = [];
+                              try {
+                                messages =
+                                    jsonDecode(_conversation!.contents) as List;
+                              } catch (e) {
+                                print(
+                                    'Error decoding conversation contents: $e');
+                                return const Center(
+                                  child: Text(
+                                      'Error: Could not decode conversation data',
+                                      style: TextStyle(color: Colors.red)),
+                                );
+                              }
+
+                              if (index >= messages.length) {
+                                return const SizedBox.shrink();
+                              }
+
                               final message =
                                   messages[index] as Map<String, dynamic>;
-                              final role = message['role'] as String;
-                              final content = message['content'] as String;
+                              final role = message['role'] as String? ?? 'user';
+                              final content = message['text'] as String? ?? '';
 
                               return Center(
                                 child: Container(
@@ -305,7 +383,6 @@ class _DiaryDetailPageState extends State<DiaryDetailPage> {
                                           height: 36,
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
-                                            color: const Color(0xFF404040),
                                             image: const DecorationImage(
                                               image: AssetImage(
                                                   'assets/icons/vona_logo.png'),
@@ -319,18 +396,16 @@ class _DiaryDetailPageState extends State<DiaryDetailPage> {
                                           decoration: BoxDecoration(
                                             color: role == 'user'
                                                 ? const Color(0xFF3A70EF)
-                                                : const Color(0xFF404040),
+                                                : const Color(0xFF2A2A2A),
                                             borderRadius:
-                                                BorderRadius.circular(15),
+                                                BorderRadius.circular(12),
                                           ),
                                           child: Text(
                                             content,
                                             style: const TextStyle(
-                                              color: Color(0xFFE2E2E2),
-                                              fontFamily: 'Poppins',
+                                              color: Colors.white,
                                               fontSize: 14,
-                                              fontWeight: FontWeight.w400,
-                                              letterSpacing: -0.3,
+                                              height: 1.5,
                                             ),
                                           ),
                                         ),
@@ -343,13 +418,12 @@ class _DiaryDetailPageState extends State<DiaryDetailPage> {
                                           height: 36,
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
-                                            color: const Color(0xFF404040),
                                             image: DecorationImage(
                                               image: _userAvatarUrl != null
                                                   ? NetworkImage(
                                                       _userAvatarUrl!)
                                                   : const AssetImage(
-                                                          'assets/images/user_profile.png')
+                                                          'assets/images/user_default_photo.png')
                                                       as ImageProvider,
                                               fit: BoxFit.cover,
                                             ),

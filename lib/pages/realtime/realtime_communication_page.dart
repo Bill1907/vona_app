@@ -6,7 +6,6 @@ import 'dart:convert';
 import 'dart:async';
 // import 'package:sdp_transform/sdp_transform.dart';
 import '../../core/network/http_service.dart';
-import '../../core/network/network_config.dart';
 import 'package:flutter/services.dart';
 import '../../core/models/journal.dart';
 import '../../core/supabase/journal_service.dart';
@@ -28,6 +27,15 @@ class Conversation {
     this.isFinal = false,
     this.status,
   });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'role': role,
+        'text': text,
+        'timestamp': timestamp,
+        'isFinal': isFinal,
+        'status': status,
+      };
 
   Conversation copyWith({
     String? text,
@@ -65,7 +73,7 @@ class RealtimeCommunicationPage extends StatefulWidget {
   const RealtimeCommunicationPage({
     super.key,
     required this.userId,
-    this.model = "gpt-4o-realtime-preview-2024-12-17",
+    this.model = "gpt-4o-mini-realtime-preview-2024-12-17",
     this.voice = "alloy",
   });
 
@@ -121,6 +129,10 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
   }
 
   void _updateStatus(String status) {
+    if (!mounted) {
+      return; // Check if widget is still mounted before calling setState
+    }
+
     setState(() {
       switch (status) {
         case 'Requesting microphone access...':
@@ -154,6 +166,8 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
   Future<void> _initializeSession() async {
     try {
       await _audioElement.initialize();
+      if (!mounted) return; // mounted 상태 확인
+
       _updateStatus('Requesting microphone access...');
 
       try {
@@ -161,6 +175,8 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
           'audio': true,
           'video': false,
         });
+
+        if (!mounted) return; // mounted 상태 확인
       } on PlatformException catch (e) {
         if (e.code == 'NotAllowedError' || e.code == 'PermissionDeniedError') {
           throw WebRTCError('Microphone permission denied', code: e.code);
@@ -193,6 +209,8 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
           },
         );
 
+        if (!mounted) return; // mounted 상태 확인
+
         if (response['client_secret'] == null) {
           throw WebRTCError('Missing client_secret in response');
         }
@@ -210,13 +228,18 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
 
         _updateStatus('Establishing connection...');
         await _setupWebRTC();
+
+        if (!mounted) return; // mounted 상태 확인
       } catch (e) {
         if (e is WebRTCError) {
           rethrow;
         }
         throw WebRTCError('Failed to initialize session', details: e);
       }
-    } catch (e, stackTrace) {
+    } catch (e) {
+      // 에러 처리 전에 mounted 상태 확인
+      if (!mounted) return;
+
       String errorMessage = 'Unknown error occurred';
 
       if (e is WebRTCError) {
@@ -229,15 +252,14 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
       }
 
       _updateStatus('Error: $errorMessage');
-      print('Error initializing session: $e');
-      print('Stack trace: $stackTrace');
-
       _showErrorDialog(errorMessage);
       _cleanupSession();
     }
   }
 
   void _showErrorDialog(String message) {
+    if (!mounted) return;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -261,6 +283,8 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
   }
 
   Future<void> _retryConnection() async {
+    if (!mounted) return;
+
     _cleanupSession();
     await _initializeSession();
   }
@@ -282,6 +306,8 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
 
       if (_isDataChannelOpen) {
         _updateStatus('Data channel opened');
+        // Start conversation when data channel is open
+        _startConversation();
       }
     };
 
@@ -320,7 +346,7 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
           _conversation.add(Conversation(
             id: _ephemeralMessageId!,
             role: 'user',
-            text: '', // Start with empty text
+            text: 'hi', // Start with empty text
             timestamp: DateTime.now().toIso8601String(),
             status: 'speaking',
           ));
@@ -428,11 +454,11 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
                 audioLevel > 0.1; // Threshold for activity detection
           });
         } catch (e) {
-          print('Error getting audio level: $e');
+          // Error handling
         }
       });
     } catch (e) {
-      print('Error starting audio analysis: $e');
+      // Error handling
     }
   }
 
@@ -441,7 +467,7 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
       await platform.invokeMethod('stopAudioAnalysis');
       _audioAnalysisTimer?.cancel();
     } catch (e) {
-      print('Error stopping audio analysis: $e');
+      // Error handling
     }
   }
 
@@ -451,8 +477,11 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
     };
 
     _peerConnection = await createPeerConnection(configuration);
+    if (!mounted) return; // mounted 상태 확인
 
     _peerConnection!.onConnectionState = (RTCPeerConnectionState state) {
+      if (!mounted) return; // mounted 상태 확인
+
       setState(() {
         _connectionState = state.toString().split('.').last;
         _updateStatus('Connection state: $_connectionState');
@@ -460,6 +489,8 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
     };
 
     _peerConnection!.onIceConnectionState = (RTCIceConnectionState state) {
+      if (!mounted) return; // mounted 상태 확인
+
       if (state == RTCIceConnectionState.RTCIceConnectionStateConnected) {
         setState(() {
           _connectionState = 'Connected';
@@ -485,14 +516,18 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
       'oai-events',
       dataChannelInit,
     );
+    if (!mounted) return; // mounted 상태 확인
 
     _configureDataChannel(_dataChannel!);
 
     _peerConnection!.onDataChannel = (channel) {
+      if (!mounted) return; // mounted 상태 확인
       _configureDataChannel(channel);
     };
 
     _peerConnection?.onTrack = (event) {
+      if (!mounted) return; // mounted 상태 확인
+
       if (event.track.kind == 'audio') {
         setState(() {
           _audioElement.srcObject = event.streams[0];
@@ -502,7 +537,10 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
     };
 
     RTCSessionDescription offer = await _peerConnection!.createOffer();
+    if (!mounted) return; // mounted 상태 확인
+
     await _peerConnection!.setLocalDescription(offer);
+    if (!mounted) return; // mounted 상태 확인
 
     try {
       final url = Uri.parse('https://api.openai.com/v1/realtime');
@@ -519,7 +557,10 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
       request.bodyBytes = offer.sdp!.codeUnits;
 
       final streamedResponse = await request.send();
+      if (!mounted) return; // mounted 상태 확인
+
       final response = await http.Response.fromStream(streamedResponse);
+      if (!mounted) return; // mounted 상태 확인
 
       if (response.statusCode != 200 && response.statusCode != 201) {
         throw Exception(
@@ -549,6 +590,7 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
         }
 
         await _peerConnection!.setRemoteDescription(answer);
+        if (!mounted) return; // mounted 상태 확인
 
         setState(() {
           if (_peerConnection?.connectionState ==
@@ -559,71 +601,187 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
         });
 
         await Future.delayed(const Duration(milliseconds: 500));
+        if (!mounted) return; // mounted 상태 확인
       } catch (e) {
-        print('Error setting remote description: $e');
         rethrow;
       }
-    } catch (e, stackTrace) {
-      print('Error setting up WebRTC connection: $e');
-      print('Stack trace: $stackTrace');
+    } catch (e) {
+      if (!mounted) return; // mounted 상태 확인
+
       _updateStatus('Connection failed: $e');
       throw WebRTCError('Failed to setup WebRTC connection', details: e);
     }
   }
 
-  void _toggleConversation() async {
-    print('Toggling conversation');
-    if (_isDataChannelOpen && _dataChannel != null) {
+  void _startConversation() {
+    if (_isDataChannelOpen && _dataChannel != null && !_isConversationActive) {
       setState(() {
-        _isConversationActive = !_isConversationActive;
+        _isConversationActive = true;
       });
 
-      if (_isConversationActive) {
-        _dataChannel!.send(RTCDataChannelMessage(jsonEncode({
-          "type": "session.update",
-          "session": {
-            "modalities": ["text", "audio"],
-            "tools": [],
-            "input_audio_transcription": {
-              "model": "whisper-1",
-            },
+      final sessionUpdateMessage = jsonEncode({
+        "type": "session.update",
+        "session": {
+          "modalities": ["text", "audio"],
+          "tools": [],
+          "input_audio_transcription": {
+            "model": "whisper-1",
           },
-        })));
-      } else {
-        print('Closing conversation');
-        _dataChannel!.send(RTCDataChannelMessage(jsonEncode({
-          "type": "session.close",
-        })));
+        },
+      });
 
-        final conversationId = await ConversationService.createConversation(
-            _conversation as List<dynamic>);
+      _dataChannel!.send(RTCDataChannelMessage(sessionUpdateMessage));
+    }
+  }
 
-        print('Conversation created: $conversationId');
+  void _stopConversation() async {
+    if (!_isDataChannelOpen || _dataChannel == null || !_isConversationActive) {
+      return;
+    }
 
-        await HttpService.instance.post(
-          'createJournals',
-          body: {
-            'conversation': _conversation,
-          },
-          onSuccess: (data) async {
-            print('API response: $data');
+    try {
+      // Check if widget is still mounted before showing dialog
+      if (!mounted) return;
 
-            // Create journal from API response
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        },
+      );
+
+      // Close the WebRTC session first
+      _dataChannel!.send(RTCDataChannelMessage(jsonEncode({
+        "type": "session.close",
+      })));
+
+      // Wait a bit for the session to close properly
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Check if widget is still mounted
+      if (!mounted) return;
+
+      // Create conversation only if we have messages
+      if (_conversation.isEmpty) {
+        if (!mounted) return;
+        Navigator.of(context).pop(); // Remove loading indicator
+        return;
+      }
+
+      // Convert conversation to JSON format
+      final conversationData =
+          _conversation.map((msg) => msg.toJson()).toList();
+
+      // Save conversation
+      final conversationId = await ConversationService.createConversation(
+        conversationData,
+      ).catchError((error) {
+        throw Exception('Failed to save conversation');
+      });
+
+      // Check if widget is still mounted
+      if (!mounted) return;
+
+      // Create journal
+      await HttpService.instance.post(
+        'createJournals',
+        body: {
+          'conversation': conversationData,
+          'conversationId': conversationId,
+        },
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+        onSuccess: (data) async {
+          if (data == null) {
+            throw Exception('Failed to process conversation');
+          }
+          try {
+            // Ensure proper decoding of Korean text
+            final keywords =
+                (data['keywords'] as List<dynamic>?)?.map((keyword) {
+                      if (keyword is String) {
+                        try {
+                          // Try to properly decode Korean text if needed
+                          final decodedKeyword =
+                              utf8.decode(utf8.encode(keyword));
+                          return decodedKeyword;
+                        } catch (e) {
+                          return keyword;
+                        }
+                      }
+                      return keyword.toString();
+                    }).toList() ??
+                    [];
+
+            final title = data['title'] != null
+                ? utf8.decode(utf8.encode(data['title'] as String))
+                : 'Untitled Journal';
+
+            final content = data['content'] != null
+                ? utf8.decode(utf8.encode(data['content'] as String))
+                : '';
+
             final journal = Journal(
-              keywords: List<String>.from(data['keywords']),
-              emotion: data['emotion'],
-              summary: data['summary'],
+              keywords: keywords,
+              emotion: data['emotion'] ?? 'neutral',
+              title: title,
+              content: content,
               conversationId: conversationId,
             );
 
-            try {
-              final createdJournal =
-                  await JournalService.createJournal(journal);
-              print('Journal created: ${createdJournal.id}');
-            } catch (e) {
-              print('Error creating journal: $e');
+            await JournalService.createJournal(journal);
+
+            // Check if widget is still mounted
+            if (!mounted) return;
+
+            // Update UI state after successful save
+            setState(() {
+              _isConversationActive = false;
+              _conversation.clear();
+            });
+
+            // Remove loading indicator
+            if (context.mounted && Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
             }
-          },
+
+            // Show success message and navigate
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Conversation saved successfully!'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+
+              Navigator.of(context).pushReplacementNamed('/');
+            }
+          } catch (e) {
+            throw Exception('Failed to create journal');
+          }
+        },
+      );
+    } catch (e) {
+      // Check if widget is still mounted
+      if (!mounted) return;
+
+      // Remove loading indicator if it's showing
+      if (Navigator.of(context).canPop() && context.mounted) {
+        Navigator.of(context).pop();
+      }
+
+      // Show error message to user
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -633,302 +791,215 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
+      appBar: AppBar(
+        title: const Text(
+          'Voice',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'poppins',
+            letterSpacing: -0.3,
+          ),
+        ),
+      ),
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            Expanded(
-              child: _connectionState != 'Connected'
-                  ? Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const CircularProgressIndicator(),
-                            const SizedBox(height: 32),
-                            Text(
-                              _status,
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
+            if (_connectionState != 'Connected')
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const CircularProgressIndicator(),
+                      const SizedBox(height: 32),
+                      Text(
+                        _status,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w600,
                             ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Please wait a moment...',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    color: Colors.grey[600],
-                                  ),
-                            ),
-                            const SizedBox(height: 40),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                _buildStepIndicator(
-                                  'Mic',
-                                  Icons.mic,
-                                  _status.contains('microphone') ||
-                                      _status.contains('Mic'),
-                                  _status.contains('AI') ||
-                                      _status.contains('voice') ||
-                                      _status.contains('Ready'),
-                                ),
-                                _buildStepConnector(
-                                  _status.contains('AI') ||
-                                      _status.contains('voice') ||
-                                      _status.contains('Ready'),
-                                ),
-                                _buildStepIndicator(
-                                  'AI Model',
-                                  Icons.psychology,
-                                  _status.contains('AI'),
-                                  _status.contains('voice') ||
-                                      _status.contains('Ready'),
-                                ),
-                                _buildStepConnector(
-                                  _status.contains('voice') ||
-                                      _status.contains('Ready'),
-                                ),
-                                _buildStepIndicator(
-                                  'Voice Chat',
-                                  Icons.chat,
-                                  _status.contains('voice') ||
-                                      _status.contains('Ready'),
-                                  _status.contains('Ready'),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
                       ),
-                    )
-                  : SingleChildScrollView(
-                      child: Column(
+                      const SizedBox(height: 16),
+                      Text(
+                        'Please wait a moment...',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Colors.grey[600],
+                            ),
+                      ),
+                      const SizedBox(height: 40),
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          _buildStepIndicator(
+                            'Mic',
+                            Icons.mic,
+                            _status.contains('microphone') ||
+                                _status.contains('Mic'),
+                            _status.contains('AI') ||
+                                _status.contains('voice') ||
+                                _status.contains('Ready'),
+                          ),
+                          _buildStepConnector(
+                            _status.contains('AI') ||
+                                _status.contains('voice') ||
+                                _status.contains('Ready'),
+                          ),
+                          _buildStepIndicator(
+                            'AI Model',
+                            Icons.psychology,
+                            _status.contains('AI'),
+                            _status.contains('voice') ||
+                                _status.contains('Ready'),
+                          ),
+                          _buildStepConnector(
+                            _status.contains('voice') ||
+                                _status.contains('Ready'),
+                          ),
+                          _buildStepIndicator(
+                            'Voice Chat',
+                            Icons.chat,
+                            _status.contains('voice') ||
+                                _status.contains('Ready'),
+                            _status.contains('Ready'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Microphone indicator with animation
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: _isInputActive
+                                ? const Color.fromRGBO(76, 175, 80, 0.2)
+                                : const Color.fromRGBO(158, 158, 158, 0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              // Microphone indicator
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: _isInputActive
-                                      ? Colors.green.withOpacity(0.2)
-                                      : Colors.grey.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.mic,
-                                      color: _isInputActive
-                                          ? Colors.green
-                                          : Colors.grey,
-                                    ),
-                                    if (_isInputActive) ...[
-                                      const SizedBox(width: 8),
-                                      const Text('Speaking',
-                                          style:
-                                              TextStyle(color: Colors.green)),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 20),
-                              // Center conversation control button
-                              GestureDetector(
-                                onDoubleTap: _toggleConversation,
-                                child: Container(
-                                  width: 60,
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: _isConversationActive
-                                        ? Colors.red.withOpacity(0.2)
-                                        : Colors.blue.withOpacity(0.2),
-                                    border: Border.all(
-                                      color: _isConversationActive
-                                          ? Colors.red
-                                          : Colors.blue,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  child: Icon(
-                                    _isConversationActive
-                                        ? Icons.stop_rounded
-                                        : Icons.play_arrow_rounded,
-                                    color: _isConversationActive
-                                        ? Colors.red
-                                        : Colors.blue,
-                                    size: 32,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 20),
-                              // Speaker indicator
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: _isOutputActive
-                                      ? Colors.blue.withOpacity(0.2)
-                                      : Colors.grey.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.volume_up,
-                                      color: _isOutputActive
-                                          ? Colors.blue
-                                          : Colors.grey,
-                                    ),
-                                    if (_isOutputActive) ...[
-                                      const SizedBox(width: 8),
-                                      Container(
-                                        width: 30,
-                                        height: 4,
+                              Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  if (_isInputActive)
+                                    ...List.generate(3, (index) {
+                                      return AnimatedContainer(
+                                        duration: Duration(milliseconds: 1000),
+                                        curve: Curves.easeInOut,
+                                        width: 24.0 + (index * 8.0),
+                                        height: 24.0 + (index * 8.0),
                                         decoration: BoxDecoration(
-                                          color: Colors.blue,
-                                          borderRadius:
-                                              BorderRadius.circular(2),
-                                        ),
-                                        child: FractionallySizedBox(
-                                          widthFactor: _currentAudioLevel,
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              color: Colors.blue.shade700,
-                                              borderRadius:
-                                                  BorderRadius.circular(2),
-                                            ),
+                                          shape: BoxShape.circle,
+                                          color: Colors.green.withOpacity(
+                                            0.3 - (index * 0.1),
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-            ),
-            if (_connectionState == 'Connected') ...[
-              Container(
-                height: 200,
-                margin: const EdgeInsets.all(8.0),
-                padding: const EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: ListView.builder(
-                  itemCount: _conversation.length,
-                  itemBuilder: (context, index) {
-                    final conversation = _conversation[index];
-                    final isUser = conversation.role == 'user';
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 4.0,
-                        horizontal: 8.0,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: isUser
-                            ? MainAxisAlignment.end
-                            : MainAxisAlignment.start,
-                        children: [
-                          if (!isUser) ...[
-                            Container(
-                              width: 28,
-                              height: 28,
-                              decoration: BoxDecoration(
-                                color: Colors.blue.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: const Icon(
-                                Icons.smart_toy_outlined,
-                                size: 16,
-                                color: Colors.blue,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                          ],
-                          Flexible(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: isUser
-                                    ? Colors.blue.withOpacity(0.1)
-                                    : Colors.grey.withOpacity(0.1),
-                                borderRadius: BorderRadius.only(
-                                  topLeft: const Radius.circular(12),
-                                  topRight: const Radius.circular(12),
-                                  bottomLeft: Radius.circular(isUser ? 12 : 4),
-                                  bottomRight: Radius.circular(isUser ? 4 : 12),
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: isUser
-                                    ? CrossAxisAlignment.end
-                                    : CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    conversation.text,
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                    ),
+                                      );
+                                    }).toList(),
+                                  Icon(
+                                    Icons.mic,
+                                    color: _isInputActive
+                                        ? Colors.green
+                                        : Colors.grey,
                                   ),
-                                  if (!conversation.isFinal &&
-                                      conversation.status != null) ...[
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      conversation.status!,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[600],
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ],
                                 ],
                               ),
-                            ),
+                              if (_isInputActive) ...[
+                                const SizedBox(width: 8),
+                                const Text('Speaking',
+                                    style: TextStyle(color: Colors.green)),
+                              ],
+                            ],
                           ),
-                          if (isUser) ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              width: 28,
-                              height: 28,
-                              decoration: BoxDecoration(
-                                color: Colors.blue.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(14),
+                        ),
+                        // Speaker indicator with animation
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: _isOutputActive
+                                ? const Color.fromRGBO(33, 150, 243, 0.2)
+                                : const Color.fromRGBO(158, 158, 158, 0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  if (_isOutputActive)
+                                    ...List.generate(3, (index) {
+                                      return AnimatedContainer(
+                                        duration: Duration(milliseconds: 1000),
+                                        curve: Curves.easeInOut,
+                                        width: 24.0 + (index * 8.0),
+                                        height: 24.0 + (index * 8.0),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.blue.withOpacity(
+                                            0.3 - (index * 0.1),
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  Icon(
+                                    Icons.volume_up,
+                                    color: _isOutputActive
+                                        ? Colors.blue
+                                        : Colors.grey,
+                                  ),
+                                ],
                               ),
-                              child: const Icon(
-                                Icons.person_outline,
-                                size: 16,
-                                color: Colors.blue,
-                              ),
-                            ),
-                          ],
-                        ],
+                              if (_isOutputActive) ...[
+                                const SizedBox(width: 8),
+                                const Text('Speaking',
+                                    style: TextStyle(color: Colors.blue)),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            // Center stop button
+            if (_connectionState == 'Connected')
+              Center(
+                child: GestureDetector(
+                  onTap: _stopConversation,
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color.fromRGBO(244, 67, 54, 0.2),
+                      border: Border.all(
+                        color: Colors.red,
+                        width: 2,
                       ),
-                    );
-                  },
+                    ),
+                    child: const Icon(
+                      Icons.stop_rounded,
+                      color: Colors.red,
+                      size: 40,
+                    ),
+                  ),
                 ),
               ),
-            ],
           ],
         ),
       ),
@@ -946,10 +1017,10 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: isComplete
-                ? Colors.green.withOpacity(0.2)
+                ? Color.fromRGBO(76, 175, 80, 0.2)
                 : isActive
-                    ? Colors.blue.withOpacity(0.2)
-                    : Colors.grey.withOpacity(0.1),
+                    ? Color.fromRGBO(33, 150, 243, 0.2)
+                    : Color.fromRGBO(158, 158, 158, 0.1),
             border: Border.all(
               color: isComplete
                   ? Colors.green
@@ -991,7 +1062,7 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
       width: 40,
       height: 2,
       margin: const EdgeInsets.symmetric(horizontal: 8),
-      color: isActive ? Colors.green : Colors.grey.withOpacity(0.3),
+      color: isActive ? Colors.green : Color.fromRGBO(158, 158, 158, 0.3),
     );
   }
 }

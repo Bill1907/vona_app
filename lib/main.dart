@@ -69,6 +69,13 @@ class MyApp extends StatelessWidget {
                 seedColor: const Color(0xFF3A70EF),
                 brightness: Brightness.dark,
               ),
+              scaffoldBackgroundColor: Colors.black,
+              navigationBarTheme: const NavigationBarThemeData(
+                backgroundColor: Colors.black,
+              ),
+              appBarTheme: const AppBarTheme(
+                backgroundColor: Colors.black,
+              ),
             ),
             initialRoute: '/',
             routes: {
@@ -85,6 +92,7 @@ class MyApp extends StatelessWidget {
                     url: AuthService.authRecoveryUrl,
                     title: '비밀번호 재설정',
                   ),
+              // '/journals': (context) => const DiaryListPage(),
             },
           );
         },
@@ -155,6 +163,9 @@ class _AuthStateScreenState extends State<AuthStateScreen> {
   Future<void> _checkCurrentSession() async {
     try {
       final session = AuthService.currentSession;
+
+      print('Current session: $session');
+
       if (!mounted) return;
 
       if (session != null) {
