@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import '../../core/models/journal.dart';
 import '../../core/supabase/journal_service.dart';
 import '../../core/supabase/conversation_service.dart';
+import '../../widgets/voice_animations.dart';
 
 class Conversation {
   final String id;
@@ -92,6 +93,7 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
   String _status = 'Initializing...';
   List<Map<String, dynamic>>? _iceServers;
   bool _isConversationActive = false;
+  bool _isConversationStarted = false;
 
   // Audio analysis
   static const platform = MethodChannel('com.vona.app/audio_analysis');
@@ -109,6 +111,9 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
   String? _ephemeralMessageId;
   bool _isDataChannelOpen = false;
 
+  // Animation controller
+  AnimationController? _animationController;
+
   @override
   void initState() {
     super.initState();
@@ -125,6 +130,7 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
     _outputIndicatorTimer?.cancel();
     _audioAnalysisTimer?.cancel();
     _stopAudioAnalysis();
+    _animationController?.dispose();
     super.dispose();
   }
 
@@ -161,6 +167,22 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
           }
       }
     });
+  }
+
+  // 음성 애니메이션을 제어하는 메서드
+  void _updateVoiceAnimation() {
+    if (!mounted) return; // 위젯이 더 이상 마운트되지 않은 경우 작업 중단
+    if (_animationController == null) return;
+
+    if (_isInputActive || _isOutputActive) {
+      _animationController?.repeat();
+    } else if (_isConversationStarted) {
+      // 대화가 시작되었지만 입력/출력이 없는 경우에는 계속 애니메이션
+      _animationController?.repeat();
+    } else {
+      // 대화가 시작되지 않은 경우에는 애니메이션 정지
+      _animationController?.stop();
+    }
   }
 
   Future<void> _initializeSession() async {
@@ -300,6 +322,8 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
 
   void _configureDataChannel(RTCDataChannel channel) {
     channel.onDataChannelState = (RTCDataChannelState state) {
+      if (!mounted) return;
+
       setState(() {
         _isDataChannelOpen = state == RTCDataChannelState.RTCDataChannelOpen;
       });
@@ -312,13 +336,15 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
     };
 
     channel.onMessage = (RTCDataChannelMessage message) {
+      if (!mounted) return;
+
       final data = jsonDecode(message.text);
       _handleDataChannelMessage(data);
     };
   }
 
   void _updateEphemeralMessage(String? text, {bool? isFinal, String? status}) {
-    if (_ephemeralMessageId == null) return;
+    if (!mounted || _ephemeralMessageId == null) return;
 
     setState(() {
       final index =
@@ -334,6 +360,8 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
   }
 
   void _handleDataChannelMessage(Map<String, dynamic> data) {
+    if (!mounted) return; // 위젯이 더 이상 마운트되지 않은 경우 작업 중단
+
     final messageType = data['type'] as String;
 
     switch (messageType) {
@@ -346,17 +374,22 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
           _conversation.add(Conversation(
             id: _ephemeralMessageId!,
             role: 'user',
-            text: 'hi', // Start with empty text
+            text: '', // Start with empty text
             timestamp: DateTime.now().toIso8601String(),
             status: 'speaking',
           ));
+
+          // 대화가 시작되었음을 표시
+          _isConversationStarted = true;
         });
+        _updateVoiceAnimation();
         break;
 
       case 'input_audio_buffer.speech_stopped':
         setState(() {
           _isInputActive = false;
         });
+        _updateVoiceAnimation();
         _updateEphemeralMessage('',
             status: 'processing'); // Keep the text, just update status
         break;
@@ -403,9 +436,11 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
             _outputIndicatorTimer!.cancel();
           }
           _outputIndicatorTimer = Timer(const Duration(milliseconds: 500), () {
+            if (!mounted) return; // 타이머 콜백에서 마운트 여부 확인
             setState(() {
               _isOutputActive = false;
             });
+            _updateVoiceAnimation();
           });
 
           if (_conversation.isNotEmpty &&
@@ -425,6 +460,7 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
             ));
           }
         });
+        _updateVoiceAnimation();
         break;
 
       case 'response.audio_transcript.done':
@@ -447,6 +483,8 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
       _audioAnalysisTimer =
           Timer.periodic(const Duration(milliseconds: 100), (_) async {
         try {
+          if (!mounted) return; // 타이머 콜백에서 마운트 여부 확인
+
           final audioLevel = await platform.invokeMethod('getAudioLevel');
           setState(() {
             _currentAudioLevel = audioLevel;
@@ -790,6 +828,7 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text(
@@ -813,20 +852,24 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const CircularProgressIndicator(),
+                      const CircularProgressIndicator(
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Color(0xFF3A70EF)),
+                      ),
                       const SizedBox(height: 32),
                       Text(
                         _status,
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.w600,
+                              color: Colors.white,
                             ),
                       ),
                       const SizedBox(height: 16),
                       Text(
                         'Please wait a moment...',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.grey[600],
+                              color: Colors.grey[400],
                             ),
                       ),
                       const SizedBox(height: 40),
@@ -874,131 +917,106 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
             else
               Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // 메인 화면 (항상 애니메이션과 텍스트만 표시)
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Microphone indicator with animation
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: _isInputActive
-                                ? const Color.fromRGBO(76, 175, 80, 0.2)
-                                : const Color.fromRGBO(158, 158, 158, 0.1),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  if (_isInputActive)
-                                    ...List.generate(3, (index) {
-                                      return AnimatedContainer(
-                                        duration: Duration(milliseconds: 1000),
-                                        curve: Curves.easeInOut,
-                                        width: 24.0 + (index * 8.0),
-                                        height: 24.0 + (index * 8.0),
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.green.withOpacity(
-                                            0.3 - (index * 0.1),
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
-                                  Icon(
-                                    Icons.mic,
-                                    color: _isInputActive
-                                        ? Colors.green
-                                        : Colors.grey,
-                                  ),
-                                ],
-                              ),
-                              if (_isInputActive) ...[
-                                const SizedBox(width: 8),
-                                const Text('Speaking',
-                                    style: TextStyle(color: Colors.green)),
-                              ],
-                            ],
+                        // 상단 공간
+                        const Spacer(flex: 1),
+
+                        // 중앙에 Lottie 애니메이션
+                        Center(
+                          child: LottieVoiceAnimationWithController(
+                            width: 210,
+                            height: 210,
+                            backgroundColor: Colors.transparent,
+                            useDarkBackground: false,
+                            ringColor: _isInputActive
+                                ? Color.fromRGBO(
+                                    244, 67, 54, 0.8) // 사용자 입력 시 빨간색
+                                : _isOutputActive
+                                    ? Color(0xFF3A70EF) // AI 출력 시 파란색
+                                    : Color(0xFF3A70EF), // 평소에는 파란색
+                            autoPlay: _isConversationStarted &&
+                                !_isInputActive, // 대화가 시작되고 입력이 없을 때만 애니메이션 재생
+                            onControllerReady: (controller) {
+                              if (!mounted) return; // 컨트롤러 콜백에서 마운트 여부 확인
+                              _animationController = controller;
+                              _updateVoiceAnimation();
+                            },
                           ),
                         ),
-                        // Speaker indicator with animation
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: _isOutputActive
-                                ? const Color.fromRGBO(33, 150, 243, 0.2)
-                                : const Color.fromRGBO(158, 158, 158, 0.1),
-                            borderRadius: BorderRadius.circular(20),
+
+                        // 상태에 따른 텍스트 표시
+                        const SizedBox(height: 86),
+                        Text(
+                          _isConversationStarted
+                              ? (_isInputActive
+                                  ? "Listening..."
+                                  : _isOutputActive
+                                      ? "Speaking..."
+                                      : "How can I help?")
+                              : "How was your day today?",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'poppins',
+                            letterSpacing: -0.3,
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  if (_isOutputActive)
-                                    ...List.generate(3, (index) {
-                                      return AnimatedContainer(
-                                        duration: Duration(milliseconds: 1000),
-                                        curve: Curves.easeInOut,
-                                        width: 24.0 + (index * 8.0),
-                                        height: 24.0 + (index * 8.0),
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.blue.withOpacity(
-                                            0.3 - (index * 0.1),
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
-                                  Icon(
-                                    Icons.volume_up,
-                                    color: _isOutputActive
-                                        ? Colors.blue
-                                        : Colors.grey,
-                                  ),
-                                ],
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 20),
+                        // 서브 텍스트
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 40),
+                          child: Text(
+                            _isConversationStarted
+                                ? "Your conversation will be saved when you press the Save button"
+                                : "Talk freely about your feelings and feel the feelings you felt today, check your emotions and see what you have spent.",
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 14,
+                              height: 1.5,
+                              fontFamily: 'poppins',
+                              fontWeight: FontWeight.w400,
+                              letterSpacing: -0.3,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+
+                        // 하단 공간
+                        const Spacer(flex: 1),
+
+                        // Save 버튼
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 40, vertical: 20),
+                          child: ElevatedButton(
+                            onPressed: _stopConversation,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xFF3A70EF),
+                              foregroundColor: Colors.white,
+                              minimumSize: Size(double.infinity, 56),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(28),
                               ),
-                              if (_isOutputActive) ...[
-                                const SizedBox(width: 8),
-                                const Text('Speaking',
-                                    style: TextStyle(color: Colors.blue)),
-                              ],
-                            ],
+                            ),
+                            child: Text(
+                              "Save",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
                 ],
-              ),
-            // Center stop button
-            if (_connectionState == 'Connected')
-              Center(
-                child: GestureDetector(
-                  onTap: _stopConversation,
-                  child: Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Color.fromRGBO(244, 67, 54, 0.2),
-                      border: Border.all(
-                        color: Colors.red,
-                        width: 2,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.stop_rounded,
-                      color: Colors.red,
-                      size: 40,
-                    ),
-                  ),
-                ),
               ),
           ],
         ),

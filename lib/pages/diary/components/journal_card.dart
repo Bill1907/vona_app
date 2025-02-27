@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:vona_app/core/models/journal.dart';
+import '../../../core/models/journal.dart';
 
 class JournalCard extends StatelessWidget {
   final Journal journal;

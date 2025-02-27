@@ -7,7 +7,7 @@ class ThemeService extends ChangeNotifier {
 
   ThemeService(this._prefs);
 
-  bool get isDarkMode => _prefs.getBool(_themeKey) ?? false;
+  bool get isDarkMode => _prefs.getBool(_themeKey) ?? true;
 
   Future<void> toggleTheme() async {
     await _prefs.setBool(_themeKey, !isDarkMode);

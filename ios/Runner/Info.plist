@@ -66,8 +66,10 @@
 		<string>Default</string>
 	</array>
 	<key>NSCameraUsageDescription</key>
-	<string>화상 통화를 위해 카메라 접근 권한이 필요합니다</string>
+	<string>Camera access permission is required for video calls and taking photos</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>화상 통화를 위해 마이크 접근 권한이 필요합니다</string>
+	<string>Microphone access permission is required for video calls</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>We'd like to send you notifications for important updates and messages</string>
 </dict>
 </plist>

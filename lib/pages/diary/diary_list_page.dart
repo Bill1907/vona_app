@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import 'package:vona_app/core/models/journal.dart';
-import 'package:vona_app/core/supabase/journal_service.dart';
-import 'package:vona_app/pages/diary/components/date_selector.dart';
-import 'package:vona_app/pages/diary/components/journal_card.dart';
-import 'package:vona_app/pages/diary/diary_detail_page.dart';
-import 'package:vona_app/widgets/fade_bottom_scroll_view.dart';
+import '../../core/models/journal.dart';
+import '../../core/supabase/journal_service.dart';
+import 'components/date_selector.dart';
+import 'components/journal_card.dart';
+import 'diary_detail_page.dart';
+import '../../widgets/fade_bottom_scroll_view.dart';
 
 import 'dart:math' as math;
 

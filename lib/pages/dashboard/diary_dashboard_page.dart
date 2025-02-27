@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:vona_app/core/models/journal.dart';
-import 'package:vona_app/core/supabase/journal_service.dart';
-import 'package:vona_app/widgets/fade_bottom_scroll_view.dart';
+import '../../core/models/journal.dart';
+import '../../core/supabase/journal_service.dart';
+import '../../widgets/fade_bottom_scroll_view.dart';
 import 'dart:math';
 
 class DiaryDashboardPage extends StatefulWidget {

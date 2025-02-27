@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:vona_app/core/models/journal.dart';
-import 'package:vona_app/core/models/conversation.dart';
-import 'package:vona_app/core/supabase/conversation_service.dart';
-import 'package:vona_app/core/supabase/profile_service.dart';
-import 'package:vona_app/core/supabase/auth_service.dart';
+import '../../core/models/journal.dart';
+import '../../core/models/conversation.dart';
+import '../../core/supabase/conversation_service.dart';
+import '../../core/supabase/profile_service.dart';
+import '../../core/supabase/auth_service.dart';
 import 'dart:convert';
 
 class DiaryDetailPage extends StatefulWidget {

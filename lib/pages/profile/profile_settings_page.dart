@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+// import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../core/supabase/auth_service.dart';
 import '../../core/supabase/profile_service.dart';
-import '../../core/theme/theme_service.dart';
+// import '../../core/theme/theme_service.dart';
 import 'account_details_page.dart';
-import 'package:vona_app/pages/settings/privacy_policy_page.dart';
+import '../../pages/settings/privacy_policy_page.dart';
 
 class ProfileSettingsPage extends StatefulWidget {
   const ProfileSettingsPage({super.key});
@@ -242,16 +242,17 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
 
               // Etc Section
               _buildSectionTitle('Others'),
-              _buildSettingsTile(
-                title: 'Dark Mode',
-                trailing: Switch(
-                  value: context.watch<ThemeService>().isDarkMode,
-                  onChanged: (value) {
-                    context.read<ThemeService>().toggleTheme();
-                  },
-                ),
-                showChevron: false,
-              ),
+              // Dark Mode toggle commented out - will be implemented in future version
+              // _buildSettingsTile(
+              //   title: 'Dark Mode',
+              //   trailing: Switch(
+              //     value: context.watch<ThemeService>().isDarkMode,
+              //     onChanged: (value) {
+              //       context.read<ThemeService>().toggleTheme();
+              //     },
+              //   ),
+              //   showChevron: false,
+              // ),
               _buildSettingsTile(
                 title: 'App Version',
                 trailing: Text(
