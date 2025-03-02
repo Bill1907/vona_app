@@ -122,15 +122,69 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
 
   @override
   void dispose() {
-    _audioElement.dispose();
-    _peerConnection?.dispose();
-    _localStream?.dispose();
-    _dataChannel?.close();
+    // 화면을 나가는 시점에서 모든 작업 취소
+    if (_isConversationActive) {
+      _isConversationActive = false;
+    }
+
+    // 객체 참조를 로컬 변수에 저장
+    final audioElement = _audioElement;
+    final peerConnection = _peerConnection;
+    final localStream = _localStream;
+    final dataChannel = _dataChannel;
+    final controller = _animationController;
+
+    // 변경 가능한 객체들만 null로 설정
+    _peerConnection = null;
+    _localStream = null;
+    _dataChannel = null;
+    _animationController = null;
+
+    // 타이머 취소
     _inputIndicatorTimer?.cancel();
     _outputIndicatorTimer?.cancel();
     _audioAnalysisTimer?.cancel();
+    _inputIndicatorTimer = null;
+    _outputIndicatorTimer = null;
+    _audioAnalysisTimer = null;
+
+    // 오디오 분석 중지
     _stopAudioAnalysis();
-    _animationController?.dispose();
+
+    // 위젯 트리에서 실행될 때까지 대기하여 dispose
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 이제 안전하게 dispose 가능
+      try {
+        audioElement.dispose();
+      } catch (e) {
+        print('Error disposing audioElement: $e');
+      }
+
+      try {
+        peerConnection?.dispose();
+      } catch (e) {
+        print('Error disposing peerConnection: $e');
+      }
+
+      try {
+        localStream?.dispose();
+      } catch (e) {
+        print('Error disposing localStream: $e');
+      }
+
+      try {
+        dataChannel?.close();
+      } catch (e) {
+        print('Error closing dataChannel: $e');
+      }
+
+      try {
+        controller?.dispose();
+      } catch (e) {
+        print('Error disposing animationController: $e');
+      }
+    });
+
     super.dispose();
   }
 
@@ -188,13 +242,17 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
   Future<void> _initializeSession() async {
     try {
       await _audioElement.initialize();
+      // Note: RTCVideoRenderer doesn't have a volume property.
+      // Volume control should be implemented on the audio tracks when received
+
       if (!mounted) return; // mounted 상태 확인
 
       _updateStatus('Requesting microphone access...');
 
       try {
         _localStream = await navigator.mediaDevices.getUserMedia({
-          'audio': true,
+          'audio': {'sampleRate': 44100, 'channelCount': 2},
+          // 'audio': true,
           'video': false,
         });
 
@@ -693,20 +751,27 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
       );
 
       // Close the WebRTC session first
-      _dataChannel!.send(RTCDataChannelMessage(jsonEncode({
-        "type": "session.close",
-      })));
+      try {
+        _dataChannel!.send(RTCDataChannelMessage(jsonEncode({
+          "type": "session.close",
+        })));
+      } catch (e) {
+        print('Error closing session: $e');
+      }
 
       // Wait a bit for the session to close properly
       await Future.delayed(const Duration(milliseconds: 500));
 
-      // Check if widget is still mounted
+      // Check if widget is still mounted before proceeding
       if (!mounted) return;
 
       // Create conversation only if we have messages
       if (_conversation.isEmpty) {
         if (!mounted) return;
-        Navigator.of(context).pop(); // Remove loading indicator
+        // Pop the dialog if mounted
+        if (context.mounted && Navigator.of(context).canPop()) {
+          Navigator.of(context).pop(); // Remove loading indicator
+        }
         return;
       }
 
@@ -721,7 +786,7 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
         throw Exception('Failed to save conversation');
       });
 
-      // Check if widget is still mounted
+      // Check if widget is still mounted before proceeding
       if (!mounted) return;
 
       // Create journal
@@ -783,21 +848,26 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
               _conversation.clear();
             });
 
-            // Remove loading indicator
-            if (context.mounted && Navigator.of(context).canPop()) {
+            // Remove loading indicator (check mounted and canPop first)
+            if (mounted && context.mounted && Navigator.of(context).canPop()) {
               Navigator.of(context).pop();
             }
 
-            // Show success message and navigate
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Conversation saved successfully!'),
-                  backgroundColor: Colors.green,
-                ),
-              );
+            // Show success message and navigate (check mounted first)
+            if (mounted && context.mounted) {
+              // Use a post-frame callback to ensure we're in a safe frame
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Conversation saved successfully!'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
 
-              Navigator.of(context).pushReplacementNamed('/');
+                  Navigator.of(context).pushReplacementNamed('/');
+                }
+              });
             }
           } catch (e) {
             throw Exception('Failed to create journal');
@@ -809,18 +879,23 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
       if (!mounted) return;
 
       // Remove loading indicator if it's showing
-      if (Navigator.of(context).canPop() && context.mounted) {
+      if (mounted && context.mounted && Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
       }
 
       // Show error message to user
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+      if (mounted && context.mounted) {
+        // Use a post-frame callback for Scaffold operations
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error: ${e.toString()}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        });
       }
     }
   }
@@ -941,9 +1016,31 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
                             autoPlay: _isConversationStarted &&
                                 !_isInputActive, // 대화가 시작되고 입력이 없을 때만 애니메이션 재생
                             onControllerReady: (controller) {
-                              if (!mounted) return; // 컨트롤러 콜백에서 마운트 여부 확인
-                              _animationController = controller;
-                              _updateVoiceAnimation();
+                              // Widget이 마운트된 상태인지 확인
+                              if (!mounted) return;
+
+                              // 새 컨트롤러를 안전하게 설정
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (!mounted) return;
+
+                                // 기존 컨트롤러가 있다면 안전하게 dispose
+                                final oldController = _animationController;
+                                _animationController = controller;
+
+                                if (oldController != null &&
+                                    oldController != controller) {
+                                  try {
+                                    oldController.dispose();
+                                  } catch (e) {
+                                    print('Error disposing old controller: $e');
+                                  }
+                                }
+
+                                // 상태가 마운트 되어있는지 다시 확인 후 애니메이션 업데이트
+                                if (mounted) {
+                                  _updateVoiceAnimation();
+                                }
+                              });
                             },
                           ),
                         ),
