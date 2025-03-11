@@ -11,6 +11,7 @@ import '../../core/models/journal.dart';
 import '../../core/supabase/journal_service.dart';
 import '../../core/supabase/conversation_service.dart';
 import '../../widgets/voice_animations.dart';
+import 'package:flutter_webrtc/src/native/audio_management.dart';
 
 class Conversation {
   final String id;
@@ -622,7 +623,23 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
     };
 
     _peerConnection?.onTrack = (event) {
-      if (!mounted) return; // mounted 상태 확인
+      if (!mounted) return;
+
+      event.streams[0].getAudioTracks().forEach((track) {
+        // Enable audio track
+        try {
+          track.enabled = true;
+
+          // NativeAudioManagement의 setVolume 메서드 사용
+          NativeAudioManagement.setVolume(4.0, track).then((_) {
+            print('Successfully set volume to 4.0');
+          }).catchError((e) {
+            print('Error setting volume with NativeAudioManagement: $e');
+          });
+        } catch (e) {
+          print('Error configuring audio track: $e');
+        }
+      });
 
       if (event.track.kind == 'audio') {
         setState(() {
