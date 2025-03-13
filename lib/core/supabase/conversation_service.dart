@@ -31,7 +31,6 @@ class ConversationService {
 
     // Convert messages to JSON string
     final jsonString = jsonEncode(messages);
-    print('JSON string length: ${jsonString.length}');
 
     final conversationData = {
       'id': id,

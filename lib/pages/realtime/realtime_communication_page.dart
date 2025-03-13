@@ -267,7 +267,7 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
         }
       }
 
-      final apiUrl = '/getWebRTCSession';
+      final apiUrl = '/webrtc/sessions';
       _updateStatus('Fetching session data...');
 
       try {
@@ -808,10 +808,9 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
 
       // Create journal
       await HttpService.instance.post(
-        'createJournals',
+        'journals',
         body: {
           'conversation': conversationData,
-          'conversationId': conversationId,
         },
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
@@ -822,6 +821,7 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
           }
           try {
             // Ensure proper decoding of Korean text
+            // Parse and print the JSON data in a more readable format
             final keywords =
                 (data['keywords'] as List<dynamic>?)?.map((keyword) {
                       if (keyword is String) {
