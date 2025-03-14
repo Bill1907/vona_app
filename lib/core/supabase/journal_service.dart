@@ -1,6 +1,5 @@
 import '../models/journal.dart';
 import 'client.dart';
-import 'auth_service.dart';
 import 'package:uuid/uuid.dart';
 
 class JournalService {
@@ -54,6 +53,65 @@ class JournalService {
         .toList();
 
     print('Returning ${journals.length} valid journals');
+    return journals;
+  }
+
+  static Future<List<Journal>> getRecentJournals({int days = 7}) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) throw Exception('User not authenticated');
+
+    // 최근 N일 이후의 날짜 계산
+    final DateTime now = DateTime.now();
+    final DateTime cutoffDate = now.subtract(Duration(days: days));
+    final String cutoffDateStr = cutoffDate.toIso8601String();
+
+    print('Fetching journals since: $cutoffDateStr');
+
+    final response = await _client
+        .from('journals')
+        .select()
+        .eq('user_id', userId)
+        .gte('created_at', cutoffDateStr) // 최근 N일 이후의 데이터만 가져옴
+        .order('created_at', ascending: false);
+
+    final journals = (response as List)
+        .map((json) {
+          try {
+            // Skip invalid entries
+            if (json['content'] == null) {
+              return null;
+            }
+
+            // Ensure required fields are present and handle null values
+            final Map<String, dynamic> safeJson = {
+              'id': json['id'] ?? const Uuid().v4(),
+              'content': json['content'], // Don't provide default for content
+              'title': json['title'] ?? 'Untitled',
+              'emotion': json['emotion'] ?? 'neutral',
+              'keywords':
+                  (json['keywords'] as List<dynamic>?)?.cast<String>() ?? [],
+              'conversation_id': json['conversation_id'] ?? '',
+              'created_at':
+                  json['created_at'] ?? DateTime.now().toIso8601String(),
+              'updated_at':
+                  json['updated_at'] ?? DateTime.now().toIso8601String(),
+              'user_id': json['user_id'] ?? '',
+            };
+
+            final journal = Journal.fromJson(safeJson);
+            return journal;
+          } catch (e, stackTrace) {
+            print('Error processing recent journal entry: $e');
+            print('Stack trace: $stackTrace');
+            print('Problematic recent journal data: $json');
+            return null; // Skip problematic entries instead of throwing
+          }
+        })
+        .where((journal) => journal != null) // Filter out null entries
+        .cast<Journal>() // Cast the non-null entries to Journal
+        .toList();
+
+    print('Returning ${journals.length} valid recent journals');
     return journals;
   }
 

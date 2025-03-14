@@ -22,7 +22,9 @@ class HttpService {
     if (endpoint.startsWith('/')) {
       endpoint = endpoint.substring(1);
     }
-    return '$baseUrl/$endpoint';
+    final url = '$baseUrl/$endpoint';
+    print('🌐 HTTP Request URL: $url');
+    return url;
   }
 
   Future<T> _handleResponse<T>(
@@ -30,30 +32,45 @@ class HttpService {
     T Function(dynamic data) onSuccess,
   ) async {
     try {
+      print('⏳ Starting HTTP request...');
       final response = await request().timeout(
         Duration(seconds: NetworkConfig.timeoutSeconds),
       );
 
-      final data = json.decode(response.body);
+      print('📥 Response status: ${response.statusCode}');
 
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        return onSuccess(data);
-      }
+      try {
+        final data = json.decode(response.body);
+        print(
+            '📄 Response body: ${response.body.substring(0, response.body.length > 100 ? 100 : response.body.length)}...');
 
-      switch (response.statusCode) {
-        case 401:
-          throw UnauthorizedException();
-        case 408:
-          throw NetworkTimeoutException();
-        default:
-          throw NetworkException(
-            message: data['message'] ?? '알 수 없는 오류가 발생했습니다.',
-            statusCode: response.statusCode,
-            error: data,
-          );
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          return onSuccess(data);
+        }
+
+        switch (response.statusCode) {
+          case 401:
+            throw UnauthorizedException();
+          case 408:
+            throw NetworkTimeoutException();
+          default:
+            throw NetworkException(
+              message: data['message'] ?? '알 수 없는 오류가 발생했습니다.',
+              statusCode: response.statusCode,
+              error: data,
+            );
+        }
+      } catch (e) {
+        print('❌ Error decoding response: $e');
+        print('📄 Raw response: ${response.body}');
+        rethrow;
       }
-    } on http.ClientException {
+    } on http.ClientException catch (e) {
+      print('❌ Network connection error: $e');
       throw NetworkConnectionException();
+    } catch (e) {
+      print('❌ Unexpected error in HTTP request: $e');
+      rethrow;
     }
   }
 
@@ -80,7 +97,7 @@ class HttpService {
     required T Function(dynamic data) onSuccess,
   }) async {
     final uri = Uri.parse(_buildUrl(endpoint));
-
+    print('uri: $uri');
     return _handleResponse(
       () => _client.post(
         uri,
