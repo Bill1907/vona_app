@@ -6,6 +6,9 @@ import '../../core/supabase/profile_service.dart';
 // import '../../core/theme/theme_service.dart';
 import 'account_details_page.dart';
 import '../../pages/settings/privacy_policy_page.dart';
+import '../../pages/settings/language_settings_page.dart';
+import '../../core/language/app_localizations.dart';
+import '../../core/language/extensions.dart';
 
 class ProfileSettingsPage extends StatefulWidget {
   const ProfileSettingsPage({super.key});
@@ -51,7 +54,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
         // 에러 메시지를 다음 프레임에서 표시
         WidgetsBinding.instance.addPostFrameCallback((_) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to load profile')),
+            SnackBar(content: Text(context.tr('failedToLoadProfile'))),
           );
         });
       }
@@ -97,25 +100,25 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(
-          'Logout',
-          style: TextStyle(
+        title: Text(
+          context.tr('logout'),
+          style: const TextStyle(
             fontFamily: 'Poppins',
             fontWeight: FontWeight.w600,
           ),
         ),
-        content: const Text(
-          'Are you sure you want to logout?',
-          style: TextStyle(
+        content: Text(
+          context.tr('logoutConfirmation'),
+          style: const TextStyle(
             fontFamily: 'Poppins',
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(
+            child: Text(
+              context.tr('cancel'),
+              style: const TextStyle(
                 fontFamily: 'Poppins',
               ),
             ),
@@ -127,9 +130,9 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                 Navigator.of(context).pushReplacementNamed('/auth');
               }
             },
-            child: const Text(
-              'Logout',
-              style: TextStyle(
+            child: Text(
+              context.tr('logout'),
+              style: const TextStyle(
                 fontFamily: 'Poppins',
               ),
             ),
@@ -143,25 +146,25 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(
-          'Delete Account',
-          style: TextStyle(
+        title: Text(
+          context.tr('deleteAccount'),
+          style: const TextStyle(
             fontFamily: 'Poppins',
             fontWeight: FontWeight.w600,
           ),
         ),
-        content: const Text(
-          'Are you sure you want to delete your account? This action cannot be undone.',
-          style: TextStyle(
+        content: Text(
+          context.tr('deleteAccountConfirmation'),
+          style: const TextStyle(
             fontFamily: 'Poppins',
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(
+            child: Text(
+              context.tr('cancel'),
+              style: const TextStyle(
                 fontFamily: 'Poppins',
               ),
             ),
@@ -172,9 +175,9 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
               Navigator.pop(context);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text(
-              'Delete',
-              style: TextStyle(
+            child: Text(
+              context.tr('delete'),
+              style: const TextStyle(
                 fontFamily: 'Poppins',
               ),
             ),
@@ -194,9 +197,9 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Profile',
-          style: TextStyle(
+        title: Text(
+          context.tr('profile'),
+          style: const TextStyle(
             fontFamily: 'Poppins',
             fontWeight: FontWeight.w600,
             fontSize: 17,
@@ -211,7 +214,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Account Section
-              _buildSectionTitle('Account'),
+              _buildSectionTitle(context.tr('account')),
               ListTile(
                 leading: CircleAvatar(
                   radius: 25,
@@ -223,14 +226,14 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                       : null,
                 ),
                 title: Text(
-                  _profile?['username'] ?? 'User',
+                  _profile?['username'] ?? context.tr('user'),
                   style: const TextStyle(
                     fontFamily: 'Poppins',
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 subtitle: Text(
-                  AuthService.currentUserEmail ?? 'No email',
+                  AuthService.currentUserEmail ?? context.tr('noEmail'),
                   style: const TextStyle(
                     fontFamily: 'Poppins',
                   ),
@@ -241,7 +244,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
               const Divider(),
 
               // Etc Section
-              _buildSectionTitle('Others'),
+              _buildSectionTitle(context.tr('others')),
               // Dark Mode toggle commented out - will be implemented in future version
               // _buildSettingsTile(
               //   title: 'Dark Mode',
@@ -254,7 +257,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
               //   showChevron: false,
               // ),
               _buildSettingsTile(
-                title: 'App Version',
+                title: context.tr('appVersion'),
                 trailing: Text(
                   'v$_appVersion',
                   style: const TextStyle(
@@ -265,7 +268,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                 showChevron: false,
               ),
               _buildSettingsTile(
-                title: 'Privacy Policy',
+                title: context.tr('privacyPolicy'),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -279,13 +282,22 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
               //   title: 'Terms of Service',
               //   onTap: () {},
               // ),
-              const Divider(thickness: 1),
+              // Language Settings
+              ListTile(
+                leading: const Icon(Icons.language),
+                title: Text(context.tr('language')),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.pushNamed(context, '/settings/language');
+                },
+              ),
+              const Divider(),
               _buildSettingsTile(
-                title: 'Logout',
+                title: context.tr('logout'),
                 onTap: _showLogoutDialog,
               ),
               _buildSettingsTile(
-                title: 'Delete Account',
+                title: context.tr('deleteAccount'),
                 titleColor: Colors.red,
                 onTap: _showDeleteAccountDialog,
               ),

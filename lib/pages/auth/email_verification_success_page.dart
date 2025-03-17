@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/language/extensions.dart';
 
 class EmailVerificationSuccessPage extends StatelessWidget {
   const EmailVerificationSuccessPage({super.key});
@@ -7,7 +8,7 @@ class EmailVerificationSuccessPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('이메일 인증 완료'),
+        title: Text(context.tr('emailVerificationComplete')),
       ),
       body: Center(
         child: Padding(
@@ -21,25 +22,25 @@ class EmailVerificationSuccessPage extends StatelessWidget {
                 color: Colors.green,
               ),
               const SizedBox(height: 24),
-              const Text(
-                '이메일 인증이 완료되었습니다',
-                style: TextStyle(
+              Text(
+                context.tr('emailVerificationCompleted'),
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                '이제 모든 서비스를 이용하실 수 있습니다.',
+              Text(
+                context.tr('canUseAllServices'),
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 16),
               ),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pushReplacementNamed('/home');
                 },
-                child: const Text('시작하기'),
+                child: Text(context.tr('getStarted')),
               ),
             ],
           ),

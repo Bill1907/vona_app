@@ -14,6 +14,7 @@ import '../../core/supabase/conversation_service.dart';
 import '../../core/supabase/instruction_service.dart';
 import '../../widgets/voice_animations.dart';
 import 'package:flutter_webrtc/src/native/audio_management.dart';
+import '../../core/language/extensions.dart';
 
 class Conversation {
   final String id;
@@ -77,7 +78,7 @@ class RealtimeCommunicationPage extends StatefulWidget {
   const RealtimeCommunicationPage({
     super.key,
     required this.userId,
-    this.model = "gpt-4o-mini-realtime-preview-2024-12-17",
+    this.model = "gpt-4o-realtime-preview-2024-12-17",
     this.voice = "alloy",
   });
 
@@ -250,8 +251,7 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
 
       try {
         _localStream = await navigator.mediaDevices.getUserMedia({
-          'audio': {'sampleRate': 44100, 'channelCount': 2},
-          // 'audio': true,
+          'audio': true,
           'video': false,
         });
 
@@ -1301,16 +1301,7 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
       backgroundColor: Colors.black,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: const Text(
-          'Voice',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-            fontFamily: 'poppins',
-            letterSpacing: -0.3,
-          ),
-        ),
+        title: Text(context.tr('voiceChat')),
       ),
       body: SafeArea(
         child: Stack(

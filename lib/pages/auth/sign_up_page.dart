@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 import '../../core/supabase/auth_service.dart';
+import '../../core/language/extensions.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -23,14 +24,14 @@ class _SignUpPageState extends State<SignUpPage> {
         _passwordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty) {
       setState(() {
-        _errorMessage = 'Please fill in all fields';
+        _errorMessage = context.tr('fillAllFields');
       });
       return;
     }
 
     if (_passwordController.text != _confirmPasswordController.text) {
       setState(() {
-        _errorMessage = 'Passwords do not match';
+        _errorMessage = context.tr('passwordsDoNotMatch');
       });
       return;
     }
@@ -57,7 +58,7 @@ class _SignUpPageState extends State<SignUpPage> {
     } catch (error) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'An unexpected error occurred.';
+          _errorMessage = context.tr('unexpectedError');
         });
       }
     } finally {
@@ -73,9 +74,9 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Sign Up',
-          style: TextStyle(
+        title: Text(
+          context.tr('signUp'),
+          style: const TextStyle(
             fontFamily: 'Poppins',
             fontWeight: FontWeight.w600,
           ),
@@ -88,9 +89,9 @@ class _SignUpPageState extends State<SignUpPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 40),
-              const Text(
-                'Email Address',
-                style: TextStyle(
+              Text(
+                context.tr('emailAddress'),
+                style: const TextStyle(
                   fontSize: 16,
                   fontFamily: 'Poppins',
                 ),
@@ -124,9 +125,9 @@ class _SignUpPageState extends State<SignUpPage> {
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Password',
-                style: TextStyle(
+              Text(
+                context.tr('password'),
+                style: const TextStyle(
                   fontSize: 16,
                   fontFamily: 'Poppins',
                 ),
@@ -173,9 +174,9 @@ class _SignUpPageState extends State<SignUpPage> {
                 obscureText: !_isPasswordVisible,
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Confirm Password',
-                style: TextStyle(
+              Text(
+                context.tr('confirmPassword'),
+                style: const TextStyle(
                   fontSize: 16,
                   fontFamily: 'Poppins',
                 ),
@@ -252,9 +253,9 @@ class _SignUpPageState extends State<SignUpPage> {
                               AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
-                    : const Text(
-                        'Sign Up',
-                        style: TextStyle(
+                    : Text(
+                        context.tr('signUp'),
+                        style: const TextStyle(
                           fontSize: 16,
                           fontFamily: 'Poppins',
                           fontWeight: FontWeight.w600,
@@ -266,9 +267,9 @@ class _SignUpPageState extends State<SignUpPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    'Already have an account? ',
-                    style: TextStyle(
+                  Text(
+                    context.tr('alreadyHaveAccount'),
+                    style: const TextStyle(
                       fontFamily: 'Poppins',
                     ),
                   ),
@@ -277,9 +278,9 @@ class _SignUpPageState extends State<SignUpPage> {
                       Navigator.of(context)
                           .pushReplacementNamed('/email-sign-in');
                     },
-                    child: const Text(
-                      'Sign In',
-                      style: TextStyle(
+                    child: Text(
+                      context.tr('signIn'),
+                      style: const TextStyle(
                         fontFamily: 'Poppins',
                         color: Color(0xFF4285F4),
                       ),

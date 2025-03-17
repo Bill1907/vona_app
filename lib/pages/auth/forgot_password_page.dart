@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 import '../../core/supabase/auth_service.dart';
+import '../../core/language/extensions.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -18,7 +19,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   Future<void> _resetPassword() async {
     if (_emailController.text.isEmpty) {
       setState(() {
-        _errorMessage = 'Please enter your email address';
+        _errorMessage = context.tr('enterEmail');
       });
       return;
     }
@@ -44,7 +45,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     } catch (error) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'An unexpected error occurred.';
+          _errorMessage = context.tr('unexpectedError');
         });
       }
     } finally {
@@ -60,9 +61,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Forgot Password',
-          style: TextStyle(
+        title: Text(
+          context.tr('forgotPasswordTitle'),
+          style: const TextStyle(
             fontFamily: 'Poppins',
             fontWeight: FontWeight.w600,
           ),
@@ -76,17 +77,17 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             children: [
               const SizedBox(height: 40),
               if (!_isSuccess) ...[
-                const Text(
-                  'Enter your email address and we will send you a link to reset your password.',
-                  style: TextStyle(
+                Text(
+                  context.tr('enterEmailForReset'),
+                  style: const TextStyle(
                     fontSize: 16,
                     fontFamily: 'Poppins',
                   ),
                 ),
                 const SizedBox(height: 32),
-                const Text(
-                  'Email Address',
-                  style: TextStyle(
+                Text(
+                  context.tr('emailAddress'),
+                  style: const TextStyle(
                     fontSize: 16,
                     fontFamily: 'Poppins',
                   ),
@@ -98,19 +99,19 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     prefixIcon: const Icon(Icons.email_outlined),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(25),
-                      borderSide: BorderSide(
+                      borderSide: const BorderSide(
                         color: Color(0xFF3A70EF),
                       ),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(25),
-                      borderSide: BorderSide(
+                      borderSide: const BorderSide(
                         color: Color(0xFF3A70EF),
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(25),
-                      borderSide: BorderSide(
+                      borderSide: const BorderSide(
                         color: Color(0xFF3A70EF),
                       ),
                     ),
@@ -149,9 +150,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                 AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
-                      : const Text(
-                          'Send Reset Link',
-                          style: TextStyle(
+                      : Text(
+                          context.tr('sendResetLink'),
+                          style: const TextStyle(
                             fontSize: 16,
                             fontFamily: 'Poppins',
                             fontWeight: FontWeight.w600,
@@ -166,10 +167,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   color: Colors.green,
                 ),
                 const SizedBox(height: 24),
-                const Text(
-                  'Password reset link has been sent to your email.',
+                Text(
+                  context.tr('resetLinkSent'),
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                     fontFamily: 'Poppins',
                   ),
@@ -186,9 +187,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Back to Sign In',
-                    style: TextStyle(
+                  child: Text(
+                    context.tr('backToSignIn'),
+                    style: const TextStyle(
                       fontSize: 16,
                       fontFamily: 'Poppins',
                       fontWeight: FontWeight.w600,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/models/journal.dart';
 import '../../core/supabase/journal_service.dart';
 import '../../widgets/fade_bottom_scroll_view.dart';
+import '../../core/language/extensions.dart';
 import 'dart:math';
 
 class DiaryDashboardPage extends StatefulWidget {
@@ -76,9 +77,9 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text(
-          'Dashboard',
-          style: TextStyle(
+        title: Text(
+          context.tr('dashboard'),
+          style: const TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 17,
             fontFamily: 'Poppins',
@@ -247,9 +248,9 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Your progress',
-          style: TextStyle(
+        Text(
+          context.tr('yourProgress'),
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             letterSpacing: -0.3,
@@ -283,7 +284,7 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
               child: Container(
                 alignment: Alignment.bottomRight,
                 child: Text(
-                  'Of the monthly journal completed',
+                  context.tr('ofTheMonthlyJournalCompleted'),
                   textAlign: TextAlign.right,
                   style: TextStyle(
                     color: Colors.grey[600],
@@ -337,7 +338,7 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'History',
+              context.tr('history'),
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
@@ -354,21 +355,21 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
   }
 
   String _getMonthName(int month) {
-    const months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December'
+    final monthKeys = [
+      'january',
+      'february',
+      'march',
+      'april',
+      'may',
+      'june',
+      'july',
+      'august',
+      'september',
+      'october',
+      'november',
+      'december'
     ];
-    return months[month - 1];
+    return context.tr(monthKeys[month - 1]);
   }
 
   Widget _buildCalendarGrid() {
@@ -404,12 +405,12 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.start,
-          children: const [
+          children: [
             SizedBox(
                 width: 44,
-                child: Text('MON',
+                child: Text(context.tr('mon'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Color(0xFF747474),
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -419,9 +420,9 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
             SizedBox(width: 8),
             SizedBox(
                 width: 44,
-                child: Text('TUE',
+                child: Text(context.tr('tue'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Color(0xFF747474),
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -431,9 +432,9 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
             SizedBox(width: 8),
             SizedBox(
                 width: 44,
-                child: Text('WED',
+                child: Text(context.tr('wed'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Color(0xFF747474),
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -443,9 +444,9 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
             SizedBox(width: 8),
             SizedBox(
                 width: 44,
-                child: Text('THU',
+                child: Text(context.tr('thu'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Color(0xFF747474),
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -455,9 +456,9 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
             SizedBox(width: 8),
             SizedBox(
                 width: 44,
-                child: Text('FRI',
+                child: Text(context.tr('fri'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Color(0xFF747474),
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -467,9 +468,9 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
             SizedBox(width: 8),
             SizedBox(
                 width: 44,
-                child: Text('SAT',
+                child: Text(context.tr('sat'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Color(0xFF747474),
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -479,9 +480,9 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
             SizedBox(width: 8),
             SizedBox(
                 width: 44,
-                child: Text('SUN',
+                child: Text(context.tr('sun'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Color(0xFF747474),
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -554,9 +555,9 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Journal Stats',
-              style: TextStyle(
+            Text(
+              context.tr('journalStats'),
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 fontFamily: 'Poppins',
@@ -600,7 +601,9 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
                 ),
               ),
               Text(
-                '$count journals',
+                context
+                    .tr('journalsCount')
+                    .replaceAll('{count}', count.toString()),
                 style: const TextStyle(
                   fontSize: 12,
                   color: Color(0xFF747474),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/models/journal.dart';
 import '../../core/supabase/journal_service.dart';
+import '../../core/language/extensions.dart';
 import 'components/date_selector.dart';
 import 'components/journal_card.dart';
 import 'diary_detail_page.dart';
@@ -55,7 +56,7 @@ class _DiaryListPageState extends State<DiaryListPage> {
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load journals.')),
+          SnackBar(content: Text(context.tr('failedToDeleteJournal'))),
         );
       }
     }
@@ -88,148 +89,178 @@ class _DiaryListPageState extends State<DiaryListPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_journals.isEmpty) {
-      return const Center(
-        child: Text('No journals written yet.'),
-      );
-    }
-
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Journals',
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Poppins',
-              )),
-          backgroundColor: Theme.of(context).colorScheme.surface,
-        ),
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        body: FadeBottomScrollView(
-          fadeHeight: 100,
-          child: SafeArea(
-            child: Column(
-              children: [
-                DateSelector(
-                  selectedDate: _selectedDate,
-                  onDateSelected: (date) {
-                    setState(() {
-                      _selectedDate = date;
-                    });
-                    _scrollToSelectedDate();
-                  },
-                ),
-                const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 16),
-                    child: Text('History',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Poppins',
-                        )),
-                  ),
-                ),
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: _loadJournals,
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.all(8),
-                      itemCount: _journals.length,
-                      itemBuilder: (context, index) {
-                        final journal = _journals[index];
-                        final isSelected = journal.createdAt.year ==
-                                _selectedDate.year &&
-                            journal.createdAt.month == _selectedDate.month &&
-                            journal.createdAt.day == _selectedDate.day;
-                        return JournalCard(
-                          journal: journal,
-                          isSelected: isSelected,
-                          onTap: () {
-                            // Scroll the card to top first
-                            _scrollController.animateTo(
-                              index *
-                                  200.0, // Approximate height of a card including margins
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-
-                            // Show modal after scrolling
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              enableDrag: true,
-                              showDragHandle: false,
-                              constraints: BoxConstraints(
-                                maxHeight:
-                                    MediaQuery.of(context).size.height * 0.95,
-                              ),
-                              builder: (context) => DraggableScrollableSheet(
-                                initialChildSize: 0.5,
-                                minChildSize: 0.5,
-                                maxChildSize: 0.95,
-                                expand: false,
-                                controller: _dragController,
-                                builder: (context, scrollController) =>
-                                    Container(
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF1A1A1A),
-                                    borderRadius: const BorderRadius.vertical(
-                                      top: Radius.circular(20),
-                                    ),
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          _dragController.animateTo(
-                                            0.95,
-                                            duration: const Duration(
-                                                milliseconds: 300),
-                                            curve: Curves.easeInOut,
-                                          );
-                                        },
-                                        child: Container(
-                                          width: 40,
-                                          height: 4,
-                                          margin: const EdgeInsets.symmetric(
-                                              vertical: 8),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFF585858),
-                                            borderRadius:
-                                                BorderRadius.circular(2),
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: DiaryDetailPage(
-                                          journal: journal,
-                                          scrollController: scrollController,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ],
+          automaticallyImplyLeading: false,
+          title: Text(
+            context.tr('myJournals'),
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 17,
+              fontFamily: 'Poppins',
+              letterSpacing: -0.3,
             ),
           ),
-        ));
+          elevation: 0,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DiaryDetailPage(
+                      journal: Journal(
+                        id: '',
+                        title: '',
+                        content: '',
+                        emotion: '',
+                        createdAt: DateTime.now(),
+                        keywords: [],
+                        conversationId: '',
+                      ),
+                    ),
+                  ),
+                ).then((_) => _loadJournals());
+              },
+              tooltip: context.tr('createNewJournal'),
+            ),
+          ],
+        ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : FadeBottomScrollView(
+                fadeHeight: 50,
+                child: SafeArea(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      DateSelector(
+                        selectedDate: _selectedDate,
+                        onDateSelected: (date) {
+                          setState(() {
+                            _selectedDate = date;
+                          });
+                          _scrollToSelectedDate();
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 16),
+                          child: Text(
+                            context.tr('history'),
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: RefreshIndicator(
+                          onRefresh: _loadJournals,
+                          child: ListView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.all(8),
+                            itemCount: _journals.length,
+                            itemBuilder: (context, index) {
+                              final journal = _journals[index];
+                              final isSelected = journal.createdAt.year ==
+                                      _selectedDate.year &&
+                                  journal.createdAt.month ==
+                                      _selectedDate.month &&
+                                  journal.createdAt.day == _selectedDate.day;
+                              return JournalCard(
+                                journal: journal,
+                                isSelected: isSelected,
+                                onTap: () {
+                                  // Scroll the card to top first
+                                  _scrollController.animateTo(
+                                    index *
+                                        200.0, // Approximate height of a card including margins
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+
+                                  // Show modal after scrolling
+                                  showModalBottomSheet(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    enableDrag: true,
+                                    showDragHandle: false,
+                                    constraints: BoxConstraints(
+                                      maxHeight:
+                                          MediaQuery.of(context).size.height *
+                                              0.95,
+                                    ),
+                                    builder: (context) =>
+                                        DraggableScrollableSheet(
+                                      initialChildSize: 0.5,
+                                      minChildSize: 0.5,
+                                      maxChildSize: 0.95,
+                                      expand: false,
+                                      controller: _dragController,
+                                      builder: (context, scrollController) =>
+                                          Container(
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF1A1A1A),
+                                          borderRadius:
+                                              const BorderRadius.vertical(
+                                            top: Radius.circular(20),
+                                          ),
+                                        ),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            GestureDetector(
+                                              onTap: () {
+                                                _dragController.animateTo(
+                                                  0.95,
+                                                  duration: const Duration(
+                                                      milliseconds: 300),
+                                                  curve: Curves.easeInOut,
+                                                );
+                                              },
+                                              child: Container(
+                                                width: 40,
+                                                height: 4,
+                                                margin:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 8),
+                                                decoration: BoxDecoration(
+                                                  color:
+                                                      const Color(0xFF585858),
+                                                  borderRadius:
+                                                      BorderRadius.circular(2),
+                                                ),
+                                              ),
+                                            ),
+                                            Expanded(
+                                              child: DiaryDetailPage(
+                                                journal: journal,
+                                                scrollController:
+                                                    scrollController,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ));
   }
 }

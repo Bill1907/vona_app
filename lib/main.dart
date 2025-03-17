@@ -6,6 +6,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/supabase/client.dart';
 import 'core/supabase/auth_service.dart';
 import 'core/theme/theme_service.dart';
+import 'core/language/language_service.dart';
+import 'core/language/app_localizations.dart';
 import 'pages/auth/auth_page.dart';
 import 'pages/auth/verify_email_page.dart';
 import 'pages/auth/email_verification_success_page.dart';
@@ -17,6 +19,10 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'utils/web_stub.dart' if (dart.library.html) 'utils/web.dart';
 import 'pages/webview_page.dart';
+import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart' show PlatformDispatcher;
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'pages/settings/language_settings_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +32,11 @@ Future<void> main() async {
 
   // Initialize SharedPreferences
   final prefs = await SharedPreferences.getInstance();
+
+  // 시스템 언어 설정 확인 (non-deprecated method)
+  final Locale systemLocale = PlatformDispatcher.instance.locale;
+  print(
+      'System locale: ${systemLocale.languageCode}${systemLocale.countryCode != null ? '_${systemLocale.countryCode}' : ''}');
 
   // 웹에서 딥링크 처리
   if (kIsWeb) {
@@ -38,24 +49,41 @@ Future<void> main() async {
     }
   }
 
-  runApp(MyApp(prefs: prefs));
+  runApp(MyApp(prefs: prefs, systemLocale: systemLocale));
 }
 
 class MyApp extends StatelessWidget {
   final SharedPreferences prefs;
+  final Locale systemLocale;
 
-  const MyApp({super.key, required this.prefs});
+  const MyApp({super.key, required this.prefs, required this.systemLocale});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ThemeService(prefs),
-      child: Consumer<ThemeService>(
-        builder: (context, themeService, _) {
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeService(prefs)),
+        ChangeNotifierProvider(
+            create: (_) => LanguageService(prefs, systemLocale)),
+      ],
+      child: Consumer2<ThemeService, LanguageService>(
+        builder: (context, themeService, languageService, _) {
           return MaterialApp(
-            title: 'Vona App',
+            title:
+                AppLocalizations(languageService.locale).translate('appName'),
             debugShowCheckedModeBanner: false,
             themeMode: themeService.themeMode,
+            // 언어 서비스에서 로케일 설정 가져오기
+            locale: languageService.locale,
+            // 지원하는 로케일 목록
+            supportedLocales: LanguageService.supportedLocales,
+            // 로컬라이제이션 대리자 설정
+            localizationsDelegates: [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+              const AppLocalizationsDelegate(),
+            ],
             theme: ThemeData(
               fontFamily: 'Poppins',
               colorScheme:
@@ -90,8 +118,10 @@ class MyApp extends StatelessWidget {
                   const EmailVerificationSuccessPage(),
               '/reset-password': (context) => WebViewPage(
                     url: AuthService.authRecoveryUrl,
-                    title: '비밀번호 재설정',
+                    title: AppLocalizations(languageService.locale)
+                        .translate('resetPassword'),
                   ),
+              '/settings/language': (context) => const LanguageSettingsPage(),
               // '/journals': (context) => const DiaryListPage(),
             },
           );

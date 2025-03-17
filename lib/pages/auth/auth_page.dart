@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:io' show Platform;
 import '../../core/supabase/auth_service.dart';
+import '../../core/language/extensions.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -86,10 +87,10 @@ class _AuthPageState extends State<AuthPage> {
                 ),
               ),
               const SizedBox(height: 58),
-              const Center(
+              Center(
                 child: Text(
-                  'Sign in to your Account',
-                  style: TextStyle(
+                  context.tr('signInToYourAccount'),
+                  style: const TextStyle(
                     fontSize: 22,
                     fontFamily: 'Poppins',
                     fontWeight: FontWeight.w800,
@@ -112,9 +113,9 @@ class _AuthPageState extends State<AuthPage> {
                   'assets/images/google-logo.svg',
                   height: 24,
                 ),
-                label: const Text(
-                  'Sign in with Google',
-                  style: TextStyle(
+                label: Text(
+                  context.tr('signInWithGoogle'),
+                  style: const TextStyle(
                     fontSize: 16,
                     fontFamily: 'Poppins',
                     fontWeight: FontWeight.w600,
@@ -137,9 +138,9 @@ class _AuthPageState extends State<AuthPage> {
                     'assets/images/apple-logo.png',
                     height: 24,
                   ),
-                  label: const Text(
-                    'Sign in with Apple',
-                    style: TextStyle(
+                  label: Text(
+                    context.tr('signInWithApple'),
+                    style: const TextStyle(
                       fontSize: 16,
                       fontFamily: 'Poppins',
                       fontWeight: FontWeight.w600,
@@ -160,9 +161,9 @@ class _AuthPageState extends State<AuthPage> {
                     borderRadius: BorderRadius.circular(25),
                   ),
                 ),
-                label: const Text(
-                  'Sign in with Email',
-                  style: TextStyle(
+                label: Text(
+                  context.tr('signInWithEmail'),
+                  style: const TextStyle(
                     fontSize: 16,
                     fontFamily: 'Poppins',
                     fontWeight: FontWeight.w600,
@@ -178,17 +179,17 @@ class _AuthPageState extends State<AuthPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      'Don\'t have an account? ',
-                      style: TextStyle(fontFamily: 'Poppins'),
+                    Text(
+                      context.tr('dontHaveAccount'),
+                      style: const TextStyle(fontFamily: 'Poppins'),
                     ),
                     TextButton(
                       onPressed: () {
                         Navigator.of(context).pushNamed('/sign-up');
                       },
-                      child: const Text(
-                        'Sign Up',
-                        style: TextStyle(
+                      child: Text(
+                        context.tr('signUp'),
+                        style: const TextStyle(
                           fontFamily: 'Poppins',
                           color: Color(0xFF4285F4),
                         ),

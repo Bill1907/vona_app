@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   uuid: ^4.3.3
   package_info_plus: ^8.2.1
   sqflite: ^2.3.2

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 import '../../core/supabase/auth_service.dart';
+import '../../core/language/extensions.dart';
 
 class EmailSignInPage extends StatefulWidget {
   const EmailSignInPage({super.key});
@@ -19,7 +20,7 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
   Future<void> _signIn() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       setState(() {
-        _errorMessage = 'Please fill in all fields';
+        _errorMessage = context.tr('fillAllFields');
       });
       return;
     }
@@ -46,7 +47,7 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
     } catch (error) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'An unexpected error occurred.';
+          _errorMessage = context.tr('unexpectedError');
         });
       }
     } finally {
@@ -62,9 +63,9 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Sign in with Email',
-          style: TextStyle(
+        title: Text(
+          context.tr('signInWithEmail'),
+          style: const TextStyle(
             fontFamily: 'Poppins',
             fontWeight: FontWeight.w600,
           ),
@@ -78,8 +79,8 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
             children: [
               const SizedBox(height: 40),
               Text(
-                'Email Address',
-                style: TextStyle(
+                context.tr('emailAddress'),
+                style: const TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 16,
                 ),
@@ -93,19 +94,19 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                   prefixIcon: const Icon(Icons.email_outlined),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(25),
-                    borderSide: BorderSide(
+                    borderSide: const BorderSide(
                       color: Color(0xFF3A70EF),
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(25),
-                    borderSide: BorderSide(
+                    borderSide: const BorderSide(
                       color: Color(0xFF3A70EF),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(25),
-                    borderSide: BorderSide(
+                    borderSide: const BorderSide(
                       color: Color(0xFF3A70EF),
                       width: 2,
                     ),
@@ -119,8 +120,8 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
               ),
               const SizedBox(height: 24),
               Text(
-                'Password',
-                style: TextStyle(
+                context.tr('password'),
+                style: const TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 16,
                 ),
@@ -147,19 +148,19 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(25),
-                    borderSide: BorderSide(
+                    borderSide: const BorderSide(
                       color: Color(0xFF3A70EF),
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(25),
-                    borderSide: BorderSide(
+                    borderSide: const BorderSide(
                       color: Color(0xFF3A70EF),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(25),
-                    borderSide: BorderSide(
+                    borderSide: const BorderSide(
                       color: Color(0xFF3A70EF),
                       width: 2,
                     ),
@@ -199,9 +200,9 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                               AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
-                    : const Text(
-                        'Sign In',
-                        style: TextStyle(
+                    : Text(
+                        context.tr('signIn'),
+                        style: const TextStyle(
                           fontSize: 16,
                           fontFamily: 'Poppins',
                           fontWeight: FontWeight.w600,
@@ -214,9 +215,9 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                 onPressed: () {
                   Navigator.of(context).pushNamed('/forgot-password');
                 },
-                child: const Text(
-                  'Forgot Password?',
-                  style: TextStyle(
+                child: Text(
+                  context.tr('forgotPassword'),
+                  style: const TextStyle(
                     fontFamily: 'Poppins',
                     color: Color(0xFF4285F4),
                   ),

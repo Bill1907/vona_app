@@ -5,6 +5,7 @@ import 'dashboard/diary_dashboard_page.dart';
 import 'diary/diary_list_page.dart';
 import 'profile/profile_settings_page.dart';
 import 'realtime/realtime_communication_page.dart';
+import '../core/language/extensions.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -61,7 +62,7 @@ class _HomePageState extends State<HomePage> {
               colorFilter:
                   const ColorFilter.mode(Colors.white, BlendMode.srcIn),
             ),
-            label: 'Home',
+            label: context.tr('home'),
           ),
           if (userId != null)
             NavigationDestination(
@@ -79,7 +80,7 @@ class _HomePageState extends State<HomePage> {
                 colorFilter:
                     const ColorFilter.mode(Colors.white, BlendMode.srcIn),
               ),
-              label: 'Voice',
+              label: context.tr('voice'),
             ),
           NavigationDestination(
             icon: SvgPicture.asset(
@@ -95,7 +96,7 @@ class _HomePageState extends State<HomePage> {
               colorFilter:
                   const ColorFilter.mode(Colors.white, BlendMode.srcIn),
             ),
-            label: 'Journals',
+            label: context.tr('journals'),
           ),
           NavigationDestination(
             icon: SvgPicture.asset(
@@ -111,7 +112,7 @@ class _HomePageState extends State<HomePage> {
               colorFilter:
                   const ColorFilter.mode(Colors.white, BlendMode.srcIn),
             ),
-            label: 'Profile',
+            label: context.tr('profile'),
           ),
         ],
       ),

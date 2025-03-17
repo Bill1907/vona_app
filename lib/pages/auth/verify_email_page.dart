@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/language/extensions.dart';
 
 class VerifyEmailPage extends StatelessWidget {
   const VerifyEmailPage({super.key});
@@ -7,7 +8,7 @@ class VerifyEmailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Verify Email'),
+        title: Text(context.tr('verifyEmail')),
       ),
       body: Center(
         child: Padding(
@@ -21,19 +22,19 @@ class VerifyEmailPage extends StatelessWidget {
                 color: Colors.deepPurple,
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Email Verification Required',
-                style: TextStyle(
+              Text(
+                context.tr('emailVerificationRequired'),
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Poppins',
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'We have sent a verification link to your email.\nPlease check your email and click the link.',
+              Text(
+                context.tr('verificationLinkSent'),
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   fontFamily: 'Poppins',
                 ),
@@ -43,9 +44,9 @@ class VerifyEmailPage extends StatelessWidget {
                 onPressed: () {
                   Navigator.of(context).pushReplacementNamed('/auth');
                 },
-                child: const Text(
-                  'Return to Login',
-                  style: TextStyle(
+                child: Text(
+                  context.tr('returnToLogin'),
+                  style: const TextStyle(
                     fontSize: 16,
                     fontFamily: 'Poppins',
                   ),
