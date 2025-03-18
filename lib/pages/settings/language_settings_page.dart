@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/language/language_service.dart';
-import '../../core/language/app_localizations.dart';
 import '../../core/language/extensions.dart';
 
 class LanguageSettingsPage extends StatelessWidget {
@@ -52,7 +51,7 @@ class LanguageSettingsPage extends StatelessWidget {
                 final bool isSelected = !languageService.isUsingSystemLocale &&
                     languageService.locale.languageCode == locale.languageCode;
 
-                // 언어 이름은 각 언어의 원어 표기를 사용하므로 번역하지 않음
+                // Language name uses the native spelling of each language, so it is not translated
                 String languageName = LanguageService.getDisplayName(locale);
 
                 return ListTile(

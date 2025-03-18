@@ -80,6 +80,11 @@ class LanguageService extends ChangeNotifier with WidgetsBindingObserver {
   static List<Locale> get supportedLocales => [
         const Locale('en', 'US'), // English
         const Locale('ko', 'KR'), // Korean
+        const Locale('ja', 'JP'), // Japanese
+        const Locale('es', 'ES'), // Spanish
+        const Locale('de', 'DE'), // German
+        const Locale('it', 'IT'), // Italian
+        const Locale('pt', 'PT'), // Portuguese
         // Add more supported locales as needed
       ];
 
@@ -90,6 +95,16 @@ class LanguageService extends ChangeNotifier with WidgetsBindingObserver {
         return 'English';
       case 'ko':
         return '한국어';
+      case 'ja':
+        return '日本語';
+      case 'es':
+        return 'Español';
+      case 'de':
+        return 'Deutsch';
+      case 'it':
+        return 'Italiano';
+      case 'pt':
+        return 'Português';
       default:
         return locale.languageCode;
     }
