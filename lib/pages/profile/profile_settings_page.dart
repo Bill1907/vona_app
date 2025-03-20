@@ -6,8 +6,6 @@ import '../../core/supabase/profile_service.dart';
 // import '../../core/theme/theme_service.dart';
 import 'account_details_page.dart';
 import '../../pages/settings/privacy_policy_page.dart';
-import '../../pages/settings/language_settings_page.dart';
-import '../../core/language/app_localizations.dart';
 import '../../core/language/extensions.dart';
 
 class ProfileSettingsPage extends StatefulWidget {
@@ -284,7 +282,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
               // ),
               // Language Settings
               ListTile(
-                leading: const Icon(Icons.language),
                 title: Text(context.tr('language')),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () {

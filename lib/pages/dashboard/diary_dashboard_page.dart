@@ -407,7 +407,7 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             SizedBox(
-                width: 44,
+                width: 42,
                 child: Text(context.tr('mon'),
                     textAlign: TextAlign.center,
                     style: const TextStyle(
@@ -417,9 +417,9 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
                       fontFamily: 'Poppins',
                       letterSpacing: -0.3,
                     ))),
-            SizedBox(width: 8),
+            SizedBox(width: 6),
             SizedBox(
-                width: 44,
+                width: 42,
                 child: Text(context.tr('tue'),
                     textAlign: TextAlign.center,
                     style: const TextStyle(
@@ -429,9 +429,9 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
                       fontFamily: 'Poppins',
                       letterSpacing: -0.3,
                     ))),
-            SizedBox(width: 8),
+            SizedBox(width: 6),
             SizedBox(
-                width: 44,
+                width: 42,
                 child: Text(context.tr('wed'),
                     textAlign: TextAlign.center,
                     style: const TextStyle(
@@ -441,9 +441,9 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
                       fontFamily: 'Poppins',
                       letterSpacing: -0.3,
                     ))),
-            SizedBox(width: 8),
+            SizedBox(width: 6),
             SizedBox(
-                width: 44,
+                width: 42,
                 child: Text(context.tr('thu'),
                     textAlign: TextAlign.center,
                     style: const TextStyle(
@@ -453,9 +453,9 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
                       fontFamily: 'Poppins',
                       letterSpacing: -0.3,
                     ))),
-            SizedBox(width: 8),
+            SizedBox(width: 6),
             SizedBox(
-                width: 44,
+                width: 42,
                 child: Text(context.tr('fri'),
                     textAlign: TextAlign.center,
                     style: const TextStyle(
@@ -465,9 +465,9 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
                       fontFamily: 'Poppins',
                       letterSpacing: -0.3,
                     ))),
-            SizedBox(width: 8),
+            SizedBox(width: 6),
             SizedBox(
-                width: 44,
+                width: 42,
                 child: Text(context.tr('sat'),
                     textAlign: TextAlign.center,
                     style: const TextStyle(
@@ -477,9 +477,9 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
                       fontFamily: 'Poppins',
                       letterSpacing: -0.3,
                     ))),
-            SizedBox(width: 8),
+            SizedBox(width: 6),
             SizedBox(
-                width: 44,
+                width: 42,
                 child: Text(context.tr('sun'),
                     textAlign: TextAlign.center,
                     style: const TextStyle(
@@ -498,17 +498,17 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
             children: week.map((day) {
               if (day == null) {
                 return Container(
-                  width: 44,
-                  height: 44,
-                  margin: const EdgeInsets.only(right: 8, bottom: 8),
+                  width: 42,
+                  height: 42,
+                  margin: const EdgeInsets.only(right: 6, bottom: 8),
                 );
               }
               final isCompleted = _monthlyJournals
                   .any((journal) => journal.createdAt.day == day);
               return Container(
-                width: 44,
-                height: 44,
-                margin: const EdgeInsets.only(right: 8, bottom: 8),
+                width: 42,
+                height: 42,
+                margin: const EdgeInsets.only(right: 6, bottom: 8),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isCompleted

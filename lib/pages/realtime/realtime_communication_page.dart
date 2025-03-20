@@ -1,25 +1,14 @@
-// import 'dart:convert';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'dart:async';
-import 'dart:math';
-// import 'package:sdp_transform/sdp_transform.dart';
-import '../../core/network/http_service.dart';
-import 'package:flutter/services.dart';
-import '../../core/models/journal.dart';
-import '../../core/supabase/journal_service.dart';
-import '../../core/supabase/conversation_service.dart';
+
 import '../../core/supabase/instruction_service.dart';
-import '../../widgets/voice_animations.dart';
-import 'package:flutter_webrtc/src/native/audio_management.dart';
 import '../../core/language/extensions.dart';
 import '../../core/services/webrtc_service.dart';
 import '../../core/services/audio_service.dart';
 import '../../core/services/conversation_manager.dart';
 import '../../core/models/conversation_message.dart';
-import '../../core/models/webrtc_error.dart';
 import 'widgets/connection_status_widget.dart';
 import 'widgets/conversation_interface_widget.dart';
 
@@ -128,6 +117,25 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Localizations는 initState가 완료된 후에 액세스해야 함
+    if (!mounted) return;
+
+    if (_conversationManager != null) {
+      final locale = Localizations.localeOf(context);
+      final newLanguageCode = locale.languageCode;
+
+      // 처음 실행 시 또는 언어 코드가 변경된 경우 업데이트
+      if (_conversationManager.languageCode != newLanguageCode) {
+        print('Language set to: $newLanguageCode');
+        _conversationManager.languageCode = newLanguageCode;
+      }
+    }
+  }
+
+  @override
   void dispose() {
     // 서비스 객체 정리
     _audioService.dispose();
@@ -155,13 +163,14 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
       onOutputStatusChanged: _handleOutputStatusChanged,
     );
 
-    // 대화 관리자 초기화
+    // 대화 관리자 초기화 (기본 언어 코드로 초기화)
     _conversationManager = ConversationManager(
       _webRTCService,
       onConversationStateChanged: _handleConversationStateChanged,
       onConversationUpdated: _handleConversationUpdated,
       onSaved: _handleConversationSaved,
       onError: _handleConversationError,
+      // 기본값으로 'en' 사용, didChangeDependencies에서 업데이트됨
     );
   }
 
@@ -401,7 +410,7 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
       body: SafeArea(
         child: Stack(
           children: [
-            if (_connectionState != 'Connected')
+            if (_connectionState != 'Data channel opened')
               // 연결 상태 표시 위젯
               ConnectionStatusWidget(status: _status)
             else

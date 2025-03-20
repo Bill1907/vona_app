@@ -29,6 +29,9 @@ class ConversationManager {
   bool _isConversationActive = false;
   bool _isConversationStarted = false;
 
+  // 언어 설정
+  String _languageCode = 'en'; // 기본값은 영어
+
   // 콜백 함수들
   ConversationStateCallback? onConversationStateChanged;
   ConversationUpdateCallback? onConversationUpdated;
@@ -45,6 +48,14 @@ class ConversationManager {
   /// 대화 시작 여부
   bool get isConversationStarted => _isConversationStarted;
 
+  /// 현재 언어 코드 설정
+  set languageCode(String code) {
+    _languageCode = code;
+  }
+
+  /// 현재 언어 코드 반환
+  String get languageCode => _languageCode;
+
   /// 대화 관리자 생성자
   ConversationManager(
     this._webRTCService, {
@@ -52,7 +63,13 @@ class ConversationManager {
     this.onConversationUpdated,
     this.onSaved,
     this.onError,
+    String? languageCode,
   }) {
+    // 언어 코드가 제공되면 설정
+    if (languageCode != null) {
+      _languageCode = languageCode;
+    }
+
     // WebRTC 메시지 수신 콜백 설정
     _webRTCService.onMessageReceived = _handleDataChannelMessage;
 
@@ -84,11 +101,10 @@ class ConversationManager {
       String systemContent =
           "You are a helpful assistant that listens to the user's day and provides thoughtful responses. ";
 
-      // 현재 언어 설정 가져오기 (현재 컨텍스트가 없으므로 임시로 영어로 설정)
-      String languageCode = 'en'; // 실제 구현에서는 Localizations에서 가져오기
+      // 현재 언어 설정 사용
       systemContent +=
-          "Please respond to the user in ${_getLanguageName(languageCode)} ";
-      systemContent += "language (code: $languageCode). ";
+          "Please respond to the user in ${_getLanguageName(_languageCode)} ";
+      systemContent += "language (code: $_languageCode). ";
 
       if (journals.isNotEmpty) {
         // 저널 제한을 제거하고 일주일치 저널을 모두 사용
@@ -122,7 +138,7 @@ class ConversationManager {
 
       // 잠시 기다려서 세션 설정이 적용되도록 함
       await Future.delayed(Duration(milliseconds: 500));
-
+      print(systemContent);
       // 시스템 메시지 전송
       final messageSent = _webRTCService.sendSystemMessage(systemContent);
 

@@ -19,7 +19,6 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'utils/web_stub.dart' if (dart.library.html) 'utils/web.dart';
 import 'pages/webview_page.dart';
-import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart' show PlatformDispatcher;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'pages/settings/language_settings_page.dart';
