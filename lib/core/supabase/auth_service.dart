@@ -128,9 +128,13 @@ Examples:
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn(
         clientId: Platform.isIOS
-            ? dotenv.env['IOS_GOOGLE_CLIENT_ID']
-            : dotenv.env['WEB_GOOGLE_CLIENT_ID'],
-        serverClientId: dotenv.env['WEB_GOOGLE_CLIENT_ID'],
+            ? dotenv.env['GOOGLE_IOS_CLIENT_ID']
+            : dotenv.env['GOOGLE_ANDROID_CLIENT_ID'],
+        serverClientId: dotenv.env['GOOGLE_WEB_CLIENT_ID'],
+        scopes: [
+          'email',
+          'profile',
+        ],
       );
 
       final googleUser = await googleSignIn.signIn();
@@ -139,6 +143,9 @@ Examples:
       }
 
       final googleAuth = await googleUser.authentication;
+
+      print('googleAuth: ${googleAuth}');
+
       final accessToken = googleAuth.accessToken;
       final idToken = googleAuth.idToken;
 

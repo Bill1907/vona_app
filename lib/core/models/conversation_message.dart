@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 /// 실시간 대화 메시지 모델
 /// 실시간 통신 중 주고 받는 메시지의 구조를 정의합니다.
 class ConversationMessage {

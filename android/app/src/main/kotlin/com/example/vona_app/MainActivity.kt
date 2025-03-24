@@ -1,5 +1,8 @@
 package com.example.vona_app
 
+import android.media.AudioFormat
+import android.media.AudioManager
+import android.media.AudioTrack
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -12,19 +15,29 @@ import kotlin.math.abs
 import kotlin.math.sqrt
 
 class MainActivity: FlutterActivity() {
-    private val CHANNEL = "com.vona.app/audio_analysis"
+    private val CHANNEL = "com.example.vona_app/audio"
     private var audioRecord: AudioRecord? = null
     private var visualizer: Visualizer? = null
     private var isRecording = false
     private var currentAudioLevel = 0.0
     private val handler = Handler(Looper.getMainLooper())
     private val bufferSize = 1024
+    private var audioThread: Thread? = null
+    private val SAMPLE_RATE = 44100 // 샘플 레이트 정의
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
+                "startAudio" -> {
+                    startAudio()
+                    result.success(null)
+                }
+                "stopAudio" -> {
+                    stopAudio()
+                    result.success(null)
+                }
                 "startAudioAnalysis" -> {
                     startAudioAnalysis(result)
                 }
@@ -39,6 +52,36 @@ class MainActivity: FlutterActivity() {
                 }
             }
         }
+    }
+
+    private fun startAudio() {
+        val minBufferSize = AudioTrack.getMinBufferSize(
+            SAMPLE_RATE,
+            AudioFormat.CHANNEL_OUT_MONO,
+            AudioFormat.ENCODING_PCM_16BIT
+        )
+
+        val audioTrack = AudioTrack(
+            AudioManager.STREAM_MUSIC,
+            SAMPLE_RATE,
+            AudioFormat.CHANNEL_OUT_MONO,
+            AudioFormat.ENCODING_PCM_16BIT,
+            minBufferSize,
+            AudioTrack.MODE_STREAM
+        )
+
+        audioTrack.play()
+
+        audioThread = Thread {
+            // 오디오 처리 로직
+            // 예: 원래 코드에서 Float를 Double로 변환
+        }
+        audioThread?.start()
+    }
+
+    private fun stopAudio() {
+        audioThread?.interrupt()
+        audioThread = null
     }
 
     private fun startAudioAnalysis(result: MethodChannel.Result) {
@@ -71,7 +114,7 @@ class MainActivity: FlutterActivity() {
                         for (i in 0 until read) {
                             sum += buffer[i] * buffer[i]
                         }
-                        currentAudioLevel = sqrt(sum / read)
+                        currentAudioLevel = sqrt(sum / read).toDouble()
                     }
                     Thread.sleep(100) // Update every 100ms
                 }

@@ -16,7 +16,8 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
 
     // Build our app and trigger a frame.
-    await tester.pumpWidget(MyApp(prefs: prefs));
+    await tester
+        .pumpWidget(MyApp(prefs: prefs, systemLocale: const Locale('en')));
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);
