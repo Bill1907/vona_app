@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
 /// 연결 상태 표시 위젯
 ///
@@ -21,132 +22,169 @@ class ConnectionStatusWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3A70EF)),
+            SizedBox(
+              width: 64,
+              height: 64,
+              child: CustomProgressIndicator(
+                startColor: Color(0xFF3A70EF),
+                endColor: Color(0x203A70EF), // 같은 색상에 투명도만 낮게 설정
+              ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 48),
             Text(
               status,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontFamily: 'Poppins',
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
+                    letterSpacing: -0.3,
                   ),
             ),
             const SizedBox(height: 16),
             Text(
               'Please wait a moment...',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontFamily: 'Poppins',
                     color: Colors.grey[400],
+                    letterSpacing: -0.3,
                   ),
-            ),
-            const SizedBox(height: 40),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildStepIndicator(
-                  context,
-                  'Mic',
-                  Icons.mic,
-                  status.contains('microphone') || status.contains('Mic'),
-                  status.contains('AI') ||
-                      status.contains('voice') ||
-                      status.contains('Ready'),
-                ),
-                _buildStepConnector(
-                  status.contains('AI') ||
-                      status.contains('voice') ||
-                      status.contains('Ready'),
-                ),
-                _buildStepIndicator(
-                  context,
-                  'AI Model',
-                  Icons.psychology,
-                  status.contains('AI'),
-                  status.contains('voice') || status.contains('Ready'),
-                ),
-                _buildStepConnector(
-                  status.contains('voice') || status.contains('Ready'),
-                ),
-                _buildStepIndicator(
-                  context,
-                  'Voice Chat',
-                  Icons.chat,
-                  status.contains('voice') || status.contains('Ready'),
-                  status.contains('Ready'),
-                ),
-              ],
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  /// 단계 표시 아이콘 빌드
-  Widget _buildStepIndicator(
-    BuildContext context,
-    String label,
-    IconData icon,
-    bool isActive,
-    bool isComplete,
-  ) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: isComplete
-                ? Color.fromRGBO(76, 175, 80, 0.2)
-                : isActive
-                    ? Color.fromRGBO(33, 150, 243, 0.2)
-                    : Color.fromRGBO(158, 158, 158, 0.1),
-            border: Border.all(
-              color: isComplete
-                  ? Colors.green
-                  : isActive
-                      ? Colors.blue
-                      : Colors.grey,
-              width: 2,
-            ),
+/// 커스텀 원형 프로그레스 인디케이터
+class CustomProgressIndicator extends StatefulWidget {
+  final Color startColor;
+  final Color endColor;
+
+  const CustomProgressIndicator({
+    super.key,
+    required this.startColor,
+    required this.endColor,
+  });
+
+  @override
+  State<CustomProgressIndicator> createState() =>
+      _CustomProgressIndicatorState();
+}
+
+class _CustomProgressIndicatorState extends State<CustomProgressIndicator>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return CustomPaint(
+          painter: GradientCircularProgressPainter(
+            progress: _controller.value,
+            strokeWidth: 6.0,
+            startColor: widget.startColor,
+            endColor: widget.endColor,
+            useStartDot: false,
           ),
-          child: Icon(
-            icon,
-            color: isComplete
-                ? Colors.green
-                : isActive
-                    ? Colors.blue
-                    : Colors.grey,
-            size: 20,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: TextStyle(
-            color: isComplete
-                ? Colors.green
-                : isActive
-                    ? Colors.blue
-                    : Colors.grey,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+        );
+      },
+    );
+  }
+}
+
+/// 그라데이션과 원형 시작점을 적용한 원형 프로그레스 페인터
+class GradientCircularProgressPainter extends CustomPainter {
+  final double progress;
+  final double strokeWidth;
+  final Color startColor;
+  final Color endColor;
+  final bool useStartDot;
+
+  GradientCircularProgressPainter({
+    required this.progress,
+    required this.strokeWidth,
+    required this.startColor,
+    required this.endColor,
+    this.useStartDot = false,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = math.min(size.width / 2, size.height / 2) - strokeWidth / 2;
+
+    final backgroundColor = const Color(0xFF1681FF)
+        .withAlpha(64); // 어두운 파란색 배경색 (25% 불투명도 = 0.25 * 255 = 64)
+
+    // 전체 원을 어두운 파란색으로 그림 (배경)
+    final backgroundPaint = Paint()
+      ..color = backgroundColor
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+
+    canvas.drawCircle(center, radius, backgroundPaint);
+
+    // 그라데이션을 적용한 짧은 호를 그림
+    final rect = Rect.fromCircle(center: center, radius: radius);
+
+    // 아크의 시작 각도
+    final startAngle = progress * 2 * math.pi;
+    // 아크의 크기 (45도)
+    final sweepAngle = math.pi / 3;
+
+    // 그라데이션용 쉐이더 생성
+    final gradient = SweepGradient(
+      startAngle: startAngle,
+      endAngle: startAngle + sweepAngle,
+      tileMode: TileMode.clamp,
+      colors: [
+        startColor, // 밝은 파란색 시작
+        startColor.withAlpha(3), // 약간 투명해짐 (1% 불투명도 = 0.01 * 255 = ~3)
+        startColor.withAlpha(0), // 완전 투명
       ],
+      stops: const [0.0, 0.76, 1.0],
+    );
+
+    final arcPaint = Paint()
+      ..shader = gradient.createShader(rect)
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+
+    // 짧은 호를 그림 (약 45도)
+    canvas.drawArc(
+      rect,
+      startAngle, // 시작 각도
+      sweepAngle, // 45도의 호
+      false,
+      arcPaint,
     );
   }
 
-  /// 단계 연결선 빌드
-  Widget _buildStepConnector(bool isActive) {
-    return Container(
-      width: 40,
-      height: 2,
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      color: isActive ? Colors.green : Color.fromRGBO(158, 158, 158, 0.3),
-    );
+  @override
+  bool shouldRepaint(covariant GradientCircularProgressPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.startColor != startColor ||
+        oldDelegate.endColor != endColor;
   }
 }

@@ -137,6 +137,31 @@ class AppLocalizations {
       'connected': 'Connected',
       'disconnected': 'Disconnected',
       'reconnecting': 'Reconnecting...',
+      'initialGreeting':
+          'Hey there! I\'m doing great, thanks for asking. How about you? How can I help you today?',
+      'howWasYourDay': 'How was your day today?',
+      'talkFreely':
+          'Talk freely about your feelings and I\'ll be here to listen and respond.',
+      'listening': 'Listening...',
+      'thinking': 'Thinking...',
+      'speaking': 'Speaking...',
+      'processing': 'Processing...',
+      'createDiary': 'Create Diary',
+      'askAnything': 'Ask Anything...',
+      // Error dialog
+      'error': 'Error',
+      'retry': 'Retry',
+      'close': 'Close',
+      // Connection status messages
+      'initializing': 'Initializing...',
+      'checkingMicrophone': 'Checking microphone permission...',
+      'preparingAIModel': 'Preparing AI model...',
+      'settingUpVoiceChat': 'Setting up voice chat...',
+      'readyToStartConversation': 'Ready to start conversation!',
+      'connectionEstablished': 'Connection established',
+      'connectionErrorOccurred': 'Connection error occurred',
+      'conversationSavedSuccessfully': 'Conversation saved successfully!',
+      'failedToSaveConversation': 'Failed to save conversation',
     },
     'ko': {
       'appName': '보나 앱',
@@ -250,14 +275,37 @@ class AppLocalizations {
 
       // 실시간 통신
       'voiceChat': '음성 채팅',
-      'startConversation': '대화 시작하기',
-      'endConversation': '대화 종료하기',
+      'startConversation': '대화 시작',
+      'endConversation': '대화 종료',
       'yourMessage': '메시지 입력',
-      'sendMessage': '메시지 보내기',
+      'sendMessage': '보내기',
       'connecting': '연결 중...',
       'connected': '연결됨',
-      'disconnected': '연결 끊김',
+      'disconnected': '연결 해제',
       'reconnecting': '재연결 중...',
+      'initialGreeting': '안녕하세요! 전 잘 지내고 있어요. 당신은 어떠세요? 오늘 무엇을 도와드릴까요?',
+      'howWasYourDay': '오늘 하루는 어땠나요?',
+      'talkFreely': '자유롭게 당신의 감정을 이야기해보세요. 듣고 응답해드릴게요.',
+      'listening': '듣는 중...',
+      'thinking': '생각 중...',
+      'speaking': '말하는 중...',
+      'processing': '처리 중...',
+      'createDiary': '일기 작성',
+      'askAnything': '무엇이든 물어보세요...',
+      // 오류 대화상자
+      'error': '오류',
+      'retry': '재시도',
+      'close': '닫기',
+      // 연결 상태 메시지
+      'initializing': '초기화 중...',
+      'checkingMicrophone': '마이크 권한 확인 중...',
+      'preparingAIModel': 'AI 모델 준비 중...',
+      'settingUpVoiceChat': '음성 채팅 설정 중...',
+      'readyToStartConversation': '대화 시작 준비 완료!',
+      'connectionEstablished': '연결 설정 완료',
+      'connectionErrorOccurred': '연결 오류가 발생했습니다',
+      'conversationSavedSuccessfully': '대화가 성공적으로 저장되었습니다!',
+      'failedToSaveConversation': '대화 저장에 실패했습니다',
     },
     'ja': {
       'appName': 'ボナアプリ',
@@ -379,6 +427,17 @@ class AppLocalizations {
       'connected': '接続済み',
       'disconnected': '切断されました',
       'reconnecting': '再接続中...',
+      'initialGreeting':
+          'Hey there! I\'m doing great, thanks for asking. How about you? How can I help you today?',
+      'howWasYourDay': 'How was your day today?',
+      'talkFreely':
+          'Talk freely about your feelings and I\'ll be here to listen and respond.',
+      'listening': 'Listening...',
+      'thinking': 'Thinking...',
+      'speaking': 'Speaking...',
+      'processing': 'Processing...',
+      'createDiary': 'Create Diary',
+      'askAnything': 'Ask Anything...',
     },
     'es': {
       'appName': 'Aplicación Vona',
@@ -509,6 +568,17 @@ class AppLocalizations {
       'connected': 'Conectado',
       'disconnected': 'Desconectado',
       'reconnecting': 'Reconectando...',
+      'initialGreeting':
+          'Hey there! I\'m doing great, thanks for asking. How about you? How can I help you today?',
+      'howWasYourDay': 'How was your day today?',
+      'talkFreely':
+          'Talk freely about your feelings and I\'ll be here to listen and respond.',
+      'listening': 'Listening...',
+      'thinking': 'Thinking...',
+      'speaking': 'Speaking...',
+      'processing': 'Processing...',
+      'createDiary': 'Create Diary',
+      'askAnything': 'Ask Anything...',
     },
     'de': {
       'appName': 'Vona App',
@@ -635,6 +705,17 @@ class AppLocalizations {
       'connected': 'Verbunden',
       'disconnected': 'Getrennt',
       'reconnecting': 'Verbinde erneut...',
+      'initialGreeting':
+          'Hey there! I\'m doing great, thanks for asking. How about you? How can I help you today?',
+      'howWasYourDay': 'How was your day today?',
+      'talkFreely':
+          'Talk freely about your feelings and I\'ll be here to listen and respond.',
+      'listening': 'Listening...',
+      'thinking': 'Thinking...',
+      'speaking': 'Speaking...',
+      'processing': 'Processing...',
+      'createDiary': 'Create Diary',
+      'askAnything': 'Ask Anything...',
     },
     'it': {
       'appName': 'Vona',
@@ -751,6 +832,17 @@ class AppLocalizations {
       'sendMessage': 'Invia messaggio',
       'connecting': 'Connessione...',
       'connected': 'Connesso',
+      'initialGreeting':
+          'Hey there! I\'m doing great, thanks for asking. How about you? How can I help you today?',
+      'howWasYourDay': 'How was your day today?',
+      'talkFreely':
+          'Talk freely about your feelings and I\'ll be here to listen and respond.',
+      'listening': 'Listening...',
+      'thinking': 'Thinking...',
+      'speaking': 'Speaking...',
+      'processing': 'Processing...',
+      'createDiary': 'Create Diary',
+      'askAnything': 'Ask Anything...',
     },
     'pt': {
       'appName': 'Vona',
@@ -826,6 +918,17 @@ class AppLocalizations {
       'history': 'Histórico',
       'journalStats': 'Estatísticas do diário',
       'journalsCount': '{count} diários',
+      'initialGreeting':
+          'Hey there! I\'m doing great, thanks for asking. How about you? How can I help you today?',
+      'howWasYourDay': 'How was your day today?',
+      'talkFreely':
+          'Talk freely about your feelings and I\'ll be here to listen and respond.',
+      'listening': 'Listening...',
+      'thinking': 'Thinking...',
+      'speaking': 'Speaking...',
+      'processing': 'Processing...',
+      'createDiary': 'Create Diary',
+      'askAnything': 'Ask Anything...',
     }
   };
 

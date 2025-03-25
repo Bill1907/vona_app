@@ -105,6 +105,7 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
   bool _isInputActive = false;
   bool _isOutputActive = false;
   bool _isConversationStarted = false;
+  bool _isSaving = false;
 
   // 애니메이션 컨트롤러
   AnimationController? _animationController;
@@ -114,6 +115,9 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
     super.initState();
     _setupServices();
     _initializeSession();
+
+    // Set initial status with default value (will be properly localized in build)
+    _status = 'initializing';
   }
 
   @override
@@ -137,6 +141,9 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
 
   @override
   void dispose() {
+    // Reset saving state
+    _isSaving = false;
+
     // 서비스 객체 정리
     _audioService.dispose();
     _webRTCService.dispose();
@@ -267,16 +274,50 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
 
   /// 대화 업데이트 처리
   void _handleConversationUpdated(List<ConversationMessage> messages) {
-    // 현재는 setState 호출 불필요 (대화 내용 표시하지 않음)
+    if (mounted) {
+      setState(() {
+        // 화면 갱신 트리거
+      });
+    }
+  }
+
+  /// 대화 저장
+  void _saveConversation() async {
+    // 로딩 표시
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    // Set saving mode flag
+    setState(() {
+      _isSaving = true;
+    });
+
+    // 대화 저장 요청
+    await _conversationManager.stopAndSaveConversation(context);
+
+    // 로딩 닫기 (이미 저장 성공/실패 핸들러에서 네비게이션하므로 여기서는 팝업만 닫음)
+    if (mounted && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
   }
 
   /// 대화 저장 완료 처리
   void _handleConversationSaved() {
     if (!mounted) return;
 
+    // Reset saving mode flag
+    setState(() {
+      _isSaving = false;
+    });
+
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Conversation saved successfully!'),
+      SnackBar(
+        content: Text(context.tr('conversationSavedSuccessfully')),
         backgroundColor: Colors.green,
       ),
     );
@@ -288,9 +329,14 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
   void _handleConversationError() {
     if (!mounted) return;
 
+    // Reset saving mode flag
+    setState(() {
+      _isSaving = false;
+    });
+
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Failed to save conversation'),
+      SnackBar(
+        content: Text(context.tr('failedToSaveConversation')),
         backgroundColor: Colors.red,
       ),
     );
@@ -303,23 +349,23 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
     setState(() {
       switch (status) {
         case 'Requesting microphone access...':
-          _status = 'Checking microphone permission...';
+          _status = 'checkingMicrophone';
           break;
         case 'Fetching session data...':
-          _status = 'Preparing AI model...';
+          _status = 'preparingAIModel';
           break;
         case 'Establishing connection...':
-          _status = 'Setting up voice chat...';
+          _status = 'settingUpVoiceChat';
           break;
         case 'Connected':
-          _status = 'Ready to start conversation!';
+          _status = 'readyToStartConversation';
           break;
         case 'Data channel opened':
-          _status = 'Connection established';
+          _status = 'connectionEstablished';
           break;
         default:
           if (status.startsWith('Error:')) {
-            _status = 'Connection error occurred';
+            _status = 'connectionErrorOccurred';
           } else if (status.startsWith('Connection state:')) {
             // 연결 상태 업데이트는 상태 텍스트에 반영하지 않음
             return;
@@ -352,7 +398,7 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Error'),
+        title: Text(context.tr('error')),
         content: Text(message),
         actions: [
           TextButton(
@@ -360,11 +406,11 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
               Navigator.of(context).pop();
               _retryConnection();
             },
-            child: const Text('Retry'),
+            child: Text(context.tr('retry')),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
+            child: Text(context.tr('close')),
           ),
         ],
       ),
@@ -375,28 +421,13 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
   Future<void> _retryConnection() async {
     if (!mounted) return;
 
+    // Reset saving flag in case of retry after error
+    setState(() {
+      _isSaving = false;
+    });
+
     _webRTCService.cleanup();
     await _initializeSession();
-  }
-
-  /// 대화 저장
-  void _saveConversation() async {
-    // 로딩 표시
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
-
-    // 대화 저장 요청
-    await _conversationManager.stopAndSaveConversation(context);
-
-    // 로딩 닫기 (이미 저장 성공/실패 핸들러에서 네비게이션하므로 여기서는 팝업만 닫음)
-    if (mounted && Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
-    }
   }
 
   @override
@@ -410,15 +441,16 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
       body: SafeArea(
         child: Stack(
           children: [
-            if (_connectionState != 'Data channel opened')
+            if (_connectionState != 'Data channel opened' && !_isSaving)
               // 연결 상태 표시 위젯
-              ConnectionStatusWidget(status: _status)
+              ConnectionStatusWidget(status: context.tr(_status))
             else
               // 대화 인터페이스 위젯
               ConversationInterfaceWidget(
                 isInputActive: _isInputActive,
                 isOutputActive: _isOutputActive,
                 isConversationStarted: _isConversationStarted,
+                messages: _conversationManager.conversation,
                 onControllerReady: (controller) {
                   // 마운트 상태 확인
                   if (!mounted) return;

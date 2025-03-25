@@ -40,6 +40,7 @@ class _HomePageState extends State<HomePage> {
         height: 80,
         backgroundColor: Colors.black,
         indicatorColor: Colors.black,
+        animationDuration: Duration.zero,
         onDestinationSelected: (index) {
           // Adjust index for non-logged in users
           final adjustedIndex = userId == null && index > 0 ? index - 1 : index;
