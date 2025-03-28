@@ -25,13 +25,13 @@
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
+			<key>CFBundleURLName</key>
+			<string>auth</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>com.vona.app</string>
 				<string>com.googleusercontent.apps.307101842878-en9giuevvomdiijb18090gvda8qgqca3</string>
 			</array>
-			<key>CFBundleURLName</key>
-			<string>auth</string>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
@@ -42,8 +42,18 @@
 	<string>307101842878-en9giuevvomdiijb18090gvda8qgqca3.apps.googleusercontent.com</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera access permission is required for video calls and taking photos</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Microphone access permission is required for video calls</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>We'd like to send you notifications for important updates and messages</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -65,11 +75,5 @@
 	<array>
 		<string>Default</string>
 	</array>
-	<key>NSCameraUsageDescription</key>
-	<string>Camera access permission is required for video calls and taking photos</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Microphone access permission is required for video calls</string>
-	<key>NSUserNotificationsUsageDescription</key>
-	<string>We'd like to send you notifications for important updates and messages</string>
 </dict>
 </plist>

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "366892240368",
+    "project_id": "vona-b7c6c",
+    "storage_bucket": "vona-b7c6c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:366892240368:android:7eb44728d5028955bc2135",
+        "android_client_info": {
+          "package_name": "com.vona.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0vQ4izlcPwSZ6yqIZ4PAkf0RgxOrAai4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

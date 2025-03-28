@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'core/supabase/client.dart';
 import 'core/supabase/auth_service.dart';
 import 'core/theme/theme_service.dart';
 import 'core/language/language_service.dart';
 import 'core/language/app_localizations.dart';
+import 'core/services/push_notification_service.dart';
 import 'pages/auth/auth_page.dart';
 import 'pages/auth/verify_email_page.dart';
 import 'pages/auth/email_verification_success_page.dart';
@@ -22,9 +26,26 @@ import 'pages/webview_page.dart';
 import 'package:flutter/foundation.dart' show PlatformDispatcher;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'pages/settings/language_settings_page.dart';
+import 'utils/notification_example.dart';
+import 'firebase_options.dart';
+
+// 백그라운드 메시지 핸들러 설정
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  print('백그라운드 메시지 처리: ${message.messageId}');
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Firebase 초기화
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // FCM 백그라운드 핸들러 등록
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   // Initialize Supabase (this includes loading env variables)
   await SupabaseClientWrapper.initialize();
@@ -121,6 +142,7 @@ class MyApp extends StatelessWidget {
                         .translate('resetPassword'),
                   ),
               '/settings/language': (context) => const LanguageSettingsPage(),
+              '/notification-example': (context) => const NotificationExample(),
               // '/journals': (context) => const DiaryListPage(),
             },
           );
@@ -140,6 +162,7 @@ class AuthStateScreen extends StatefulWidget {
 class _AuthStateScreenState extends State<AuthStateScreen> {
   late final StreamSubscription<AuthState> _authStateSubscription;
   final _appLinks = AppLinks();
+  final _pushNotificationService = PushNotificationService();
 
   @override
   void initState() {
@@ -163,6 +186,8 @@ class _AuthStateScreenState extends State<AuthStateScreen> {
       if (!mounted) return;
 
       if (event == AuthChangeEvent.signedIn) {
+        // 로그인 시 푸시 알림 서비스 초기화
+        await _pushNotificationService.initialize();
         _navigateToHome();
       } else if (event == AuthChangeEvent.signedOut) {
         _navigateToAuth();
