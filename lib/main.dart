@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 // import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'core/supabase/client.dart';
 import 'core/supabase/auth_service.dart';
@@ -52,6 +53,13 @@ Future<void> main() async {
 
   // Initialize SharedPreferences
   final prefs = await SharedPreferences.getInstance();
+
+  // Initialize timezone
+  try {
+    await FlutterNativeTimezone.getLocalTimezone();
+  } catch (e) {
+    print('Error initializing timezone: $e');
+  }
 
   // 시스템 언어 설정 확인 (non-deprecated method)
   final Locale systemLocale = PlatformDispatcher.instance.locale;

@@ -54,6 +54,8 @@
 	<array>
 		<string>fetch</string>
 	</array>
+	<key>NSTimeZoneUsageDescription</key>
+	<string>We need access to your timezone to schedule notifications at the correct time.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

@@ -178,9 +178,16 @@ class PushNotificationService {
 
   // 타임존 초기화
   Future<void> _initializeTimeZone() async {
-    tz_data.initializeTimeZones();
-    final String timeZoneName = await FlutterNativeTimezone.getLocalTimezone();
-    tz.setLocalLocation(tz.getLocation(timeZoneName));
+    try {
+      tz_data.initializeTimeZones();
+      final String timeZoneName =
+          await FlutterNativeTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(timeZoneName));
+    } catch (e) {
+      print('Error initializing timezone: $e');
+      // 기본 시간대 설정 (UTC)
+      tz.setLocalLocation(tz.UTC);
+    }
   }
 
   // 매일 저녁 9시에 일기 작성 알림 예약

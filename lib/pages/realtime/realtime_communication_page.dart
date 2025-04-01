@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'dart:io' show Platform;
 
 import '../../core/supabase/instruction_service.dart';
 import '../../core/language/extensions.dart';
@@ -106,6 +108,8 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
   bool _isOutputActive = false;
   bool _isConversationStarted = false;
   bool _isSaving = false;
+  InterstitialAd? _interstitialAd;
+  bool _isInterstitialAdReady = false;
 
   // 애니메이션 컨트롤러
   AnimationController? _animationController;
@@ -115,6 +119,7 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
     super.initState();
     _setupServices();
     _initializeSession();
+    _loadInterstitialAd();
 
     // Set initial status with default value (will be properly localized in build)
     _status = 'initializing';
@@ -151,6 +156,9 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
 
     // 오디오 요소 정리
     _audioElement.dispose();
+
+    // 전면 광고 정리
+    _interstitialAd?.dispose();
 
     super.dispose();
   }
@@ -297,12 +305,41 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
       _isSaving = true;
     });
 
-    // 대화 저장 요청
-    await _conversationManager.stopAndSaveConversation(context);
+    // 전면 광고가 준비되어 있다면 표시
+    if (_isInterstitialAdReady && _interstitialAd != null) {
+      _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (ad) {
+          ad.dispose();
+          _loadInterstitialAd(); // 다음 광고 로드
+          _saveConversationToServer();
+        },
+        onAdFailedToShowFullScreenContent: (ad, error) {
+          ad.dispose();
+          _loadInterstitialAd(); // 다음 광고 로드
+          _saveConversationToServer();
+        },
+      );
+      await _interstitialAd!.show();
+    } else {
+      _saveConversationToServer();
+    }
+  }
 
-    // 로딩 닫기 (이미 저장 성공/실패 핸들러에서 네비게이션하므로 여기서는 팝업만 닫음)
-    if (mounted && Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
+  /// 서버에 대화 저장
+  Future<void> _saveConversationToServer() async {
+    try {
+      // 대화 저장 요청
+      await _conversationManager.stopAndSaveConversation(context);
+
+      // 로딩 닫기 (이미 저장 성공/실패 핸들러에서 네비게이션하므로 여기서는 팝업만 닫음)
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+      _handleConversationError();
     }
   }
 
@@ -428,6 +465,26 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
 
     _webRTCService.cleanup();
     await _initializeSession();
+  }
+
+  /// 전면 광고 로드
+  void _loadInterstitialAd() {
+    InterstitialAd.load(
+      adUnitId: Platform.isAndroid
+          ? 'ca-app-pub-3940256099942544/1033173712' // Android test adUnitId
+          : 'ca-app-pub-7913636156841478/5264309666', // iOS production adUnitId
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          _interstitialAd = ad;
+          _isInterstitialAdReady = true;
+        },
+        onAdFailedToLoad: (error) {
+          print('Interstitial ad failed to load: ${error.message}');
+          _isInterstitialAdReady = false;
+        },
+      ),
+    );
   }
 
   @override
