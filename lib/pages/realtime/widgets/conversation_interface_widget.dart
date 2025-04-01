@@ -116,14 +116,7 @@ class _ConversationInterfaceWidgetState
     // 스크롤 이동은 위젯이 그려진 후에 실행
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
-        // 내용이 화면을 넘어갈 경우에만 스크롤 실행
-        if (_scrollController.position.maxScrollExtent > 0) {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        }
+        _scrollController.jumpTo(0); // reverse: true이므로 0이 최하단
       }
     });
   }
@@ -154,10 +147,10 @@ class _ConversationInterfaceWidgetState
       key: messagesKey,
       controller: _scrollController,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      reverse: false, // 정방향 리스트 유지
+      reverse: true, // 역방향 리스트로 변경
       itemCount: widget.messages?.length ?? 0,
       itemBuilder: (context, index) {
-        final message = widget.messages![index];
+        final message = widget.messages![widget.messages!.length - 1 - index];
         return _buildMessageBubble(message);
       },
     );
