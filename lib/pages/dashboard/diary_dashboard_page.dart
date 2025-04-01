@@ -4,6 +4,8 @@ import '../../core/supabase/journal_service.dart';
 import '../../widgets/fade_bottom_scroll_view.dart';
 import '../../core/language/extensions.dart';
 import 'dart:math';
+import 'dart:io' show Platform;
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class DiaryDashboardPage extends StatefulWidget {
   const DiaryDashboardPage({super.key});
@@ -17,11 +19,14 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
   bool _isLoading = true;
   bool _showBarAnimation = false;
   DateTime _selectedDate = DateTime.now();
+  BannerAd? _bannerAd;
+  bool _isAdLoaded = false;
 
   @override
   void initState() {
     super.initState();
     _loadMonthlyJournals();
+    _createBannerAd();
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
         setState(() {
@@ -72,6 +77,36 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
     });
   }
 
+  void _createBannerAd() {
+    _bannerAd = BannerAd(
+      size: AdSize.banner,
+      adUnitId: Platform.isAndroid
+          ? 'ca-app-pub-3940256099942544/6300978111' // Android test adUnitId
+          : 'ca-app-pub-7913636156841478/2772301286', // iOS test adUnitId
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+          print('Ad loaded successfully!');
+          setState(() {
+            _isAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          print('Ad failed to load: ${error.message}');
+          ad.dispose();
+        },
+      ),
+      request: const AdRequest(),
+    );
+
+    _bannerAd?.load();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -89,33 +124,46 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
         elevation: 0,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       ),
-      body: FadeBottomScrollView(
-        fadeHeight: 100,
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  _buildMonthSelector(),
-                  const SizedBox(height: 16),
-                  if (_isLoading)
-                    const Center(
-                      child: CircularProgressIndicator(),
-                    )
-                  else
-                    Column(
+      body: Column(
+        children: [
+          Expanded(
+            child: FadeBottomScrollView(
+              fadeHeight: 100,
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
                       children: [
-                        _buildProgressCard(),
+                        _buildMonthSelector(),
                         const SizedBox(height: 16),
-                        _buildJournalStatsCard(),
+                        if (_isLoading)
+                          const Center(
+                            child: CircularProgressIndicator(),
+                          )
+                        else
+                          Column(
+                            children: [
+                              _buildProgressCard(),
+                              const SizedBox(height: 16),
+                              _buildJournalStatsCard(),
+                            ],
+                          ),
                       ],
                     ),
-                ],
+                  ),
+                ),
               ),
             ),
           ),
-        ),
+          if (_isAdLoaded)
+            Container(
+              alignment: Alignment.center,
+              width: _bannerAd?.size.width.toDouble(),
+              height: _bannerAd?.size.height.toDouble(),
+              child: AdWidget(ad: _bannerAd!),
+            ),
+        ],
       ),
     );
   }

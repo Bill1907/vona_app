@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'core/supabase/client.dart';
 import 'core/supabase/auth_service.dart';
 import 'core/theme/theme_service.dart';
@@ -188,6 +188,8 @@ class _AuthStateScreenState extends State<AuthStateScreen> {
       if (event == AuthChangeEvent.signedIn) {
         // 로그인 시 푸시 알림 서비스 초기화
         await _pushNotificationService.initialize();
+        // 매일 저녁 9시 일기 알림 설정
+        await _pushNotificationService.initializeDiaryReminders();
         _navigateToHome();
       } else if (event == AuthChangeEvent.signedOut) {
         _navigateToAuth();
@@ -224,6 +226,9 @@ class _AuthStateScreenState extends State<AuthStateScreen> {
 
       if (session != null) {
         _navigateToHome();
+        // 기존 세션이 있는 경우 일기 알림 초기화
+        await _pushNotificationService.initialize();
+        await _pushNotificationService.initializeDiaryReminders();
       } else {
         _navigateToAuth();
       }
