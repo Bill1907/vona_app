@@ -45,3 +45,4 @@ app.*.map.json
 /android/app/release
 
 .env
+vona-b7c6c-firebase-adminsdk-fbsvc-7f81f1d8e0.json
