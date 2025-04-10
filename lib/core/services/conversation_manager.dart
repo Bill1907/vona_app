@@ -324,6 +324,7 @@ class ConversationManager {
         'journals',
         body: {
           'conversation': conversationData,
+          'lang': _languageCode,
         },
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
