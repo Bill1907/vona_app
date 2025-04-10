@@ -214,7 +214,7 @@ class _ConversationInterfaceWidgetState
                         padding: const EdgeInsets.symmetric(
                             horizontal: 24, vertical: 14),
                         decoration: const BoxDecoration(
-                          color: Color(0xFF3A70EF),
+                          color: Color(0xFF262626),
                           borderRadius: BorderRadius.all(Radius.circular(24)),
                         ),
                         child: Text(
@@ -222,9 +222,10 @@ class _ConversationInterfaceWidgetState
                               ? context.tr('listening')
                               : message.text,
                           style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
+                            color: Color(0xFFE2E2E2),
+                            fontFamily: 'Poppins',
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
                             letterSpacing: -0.3,
                           ),
                         ),
@@ -245,7 +246,7 @@ class _ConversationInterfaceWidgetState
                         ),
                       ),
               ),
-              const SizedBox(width: 32),
+              const SizedBox(width: 10),
               if (isUser) _buildUserAvatar(),
             ],
           ),
@@ -290,33 +291,6 @@ class _ConversationInterfaceWidgetState
       padding: const EdgeInsets.only(bottom: 24, left: 24, right: 24),
       child: Column(
         children: [
-          // Save 버튼 - 대화가 시작된 경우에만 표시
-          if (widget.isConversationStarted &&
-              widget.messages != null &&
-              widget.messages!.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20),
-              child: ElevatedButton(
-                onPressed: widget.onSave,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3A70EF),
-                  foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                ),
-                child: Text(
-                  context.tr('createDiary'),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-
           // 3D 모델 애니메이션 (작게 표시)
           SizedBox(
             height: 120,
@@ -351,6 +325,34 @@ class _ConversationInterfaceWidgetState
           ),
 
           const SizedBox(height: 16),
+          if (widget.isConversationStarted &&
+              widget.messages != null &&
+              widget.messages!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: ElevatedButton(
+                onPressed: widget.onSave,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3A70EF),
+                  foregroundColor: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  minimumSize: const Size(double.infinity, 48), // 좌우로 가득 채우기
+                ),
+                child: Text(
+                  context.tr('createDiary'),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Poppins',
+                    letterSpacing: -0.3,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
