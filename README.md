@@ -2,8 +2,6 @@
 
 Vona는 OpenAI의 realtime API를 활용하여 실시간으로 AI와 대화하고, 그 대화를 바탕으로 하루를 정리하는 Flutter 모바일 애플리케이션입니다. 사용자들이 매일 하루를 쉽게 트래킹하고 어제보다 더 나은 오늘을 살 수 있도록 도와줍니다.
 
-![Vona App Screenshot](assets/screenshots/main_screen.png)
-
 ## Features
 
 - 실시간 AI 대화 기능을 통한 일상 정리
@@ -20,33 +18,6 @@ Vona는 OpenAI의 realtime API를 활용하여 실시간으로 AI와 대화하�
   <img src="assets/screenshots/ai_voice.png" alt="목표 추적 화면" width="200"/>
   <img src="assets/screenshots/journals.png" alt="분석 화면" width="200"/>
 </div>
-
-## Installation
-
-1. Clone the repository
-
-   ```
-   git clone https://github.com/yourusername/vona_app.git
-   ```
-
-2. Install dependencies
-
-   ```
-   cd vona_app
-   flutter pub get
-   ```
-
-3. OpenAI API 키 설정
-
-   ```
-   // .env 파일을 생성하고 다음과 같이 API 키를 설정하세요
-   OPENAI_API_KEY=your_api_key_here
-   ```
-
-4. Run the app
-   ```
-   flutter run
-   ```
 
 ## Tech Stack
 
@@ -74,18 +45,9 @@ lib/
 └── utils/              # 헬퍼 함수 및 상수
 ```
 
-## 마케팅 자료
-
-홍보용 고해상도 이미지는 `assets/marketing/` 디렉토리에서 찾을 수 있습니다:
-
-- 앱 아이콘 및 로고: `assets/marketing/logo/`
-- 앱스토어 스크린샷: `assets/marketing/screenshots/`
-- 소셜 미디어 배너: `assets/marketing/social/`
-- 프레젠테이션 자료: `assets/marketing/presentation/`
-
 ## License
 
-이 프로젝트는 MIT 라이센스를 따릅니다 - 자세한 내용은 LICENSE 파일을 참조하세요.
+이 프로젝트는 독점 라이센스를 따릅니다 - 자세한 내용은 LICENSE 파일을 참조하세요.
 
 ## Acknowledgments
 
