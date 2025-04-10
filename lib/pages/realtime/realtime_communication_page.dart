@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:io' show Platform;
 
 import '../../core/supabase/instruction_service.dart';
@@ -138,7 +139,6 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
 
       // 처음 실행 시 또는 언어 코드가 변경된 경우 업데이트
       if (_conversationManager.languageCode != newLanguageCode) {
-        print('Language set to: $newLanguageCode');
         _conversationManager.languageCode = newLanguageCode;
       }
     }
@@ -469,10 +469,12 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
 
   /// 전면 광고 로드
   void _loadInterstitialAd() {
+    final String adUnitId = Platform.isAndroid
+        ? dotenv.get('GOOGLE_ADMOB_INTERSTITIAL_ANDROID_ID')
+        : dotenv.get('GOOGLE_ADMOB_INTERSTITIAL_IOS_ID');
+
     InterstitialAd.load(
-      adUnitId: Platform.isAndroid
-          ? 'ca-app-pub-3940256099942544/1033173712' // Android test adUnitId
-          : 'ca-app-pub-7913636156841478/5264309666', // iOS production adUnitId
+      adUnitId: adUnitId,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {

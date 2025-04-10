@@ -6,6 +6,7 @@ import '../../core/language/extensions.dart';
 import 'dart:math';
 import 'dart:io' show Platform;
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class DiaryDashboardPage extends StatefulWidget {
   const DiaryDashboardPage({super.key});
@@ -81,17 +82,15 @@ class _DiaryDashboardPageState extends State<DiaryDashboardPage> {
     _bannerAd = BannerAd(
       size: AdSize.banner,
       adUnitId: Platform.isAndroid
-          ? 'ca-app-pub-3940256099942544/6300978111' // Android test adUnitId
-          : 'ca-app-pub-7913636156841478/2772301286', // iOS test adUnitId
+          ? dotenv.get('GOOGLE_ADMOB_BANNER_ANDROID_ID')
+          : dotenv.get('GOOGLE_ADMOB_BANNER_IOS_ID'),
       listener: BannerAdListener(
         onAdLoaded: (_) {
-          print('Ad loaded successfully!');
           setState(() {
             _isAdLoaded = true;
           });
         },
         onAdFailedToLoad: (ad, error) {
-          print('Ad failed to load: ${error.message}');
           ad.dispose();
         },
       ),
