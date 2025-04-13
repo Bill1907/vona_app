@@ -164,40 +164,46 @@ class ConversationManager {
 
   /// 데이터 채널 메시지 처리
   void _handleDataChannelMessage(Map<String, dynamic> data) {
-    final messageType = data['type'] as String;
+    try {
+      final messageType = data['type'] as String;
 
-    switch (messageType) {
-      case 'input_audio_buffer.speech_started':
-        _isInputStarted();
-        break;
+      switch (messageType) {
+        case 'input_audio_buffer.speech_started':
+          _isInputStarted();
+          break;
 
-      case 'input_audio_buffer.speech_stopped':
-        _isInputStopped();
-        break;
+        case 'input_audio_buffer.speech_stopped':
+          _isInputStopped();
+          break;
 
-      case 'input_audio_buffer.committed':
-        _updateEphemeralMessage(null, status: 'processing');
-        break;
+        case 'input_audio_buffer.committed':
+          _updateEphemeralMessageStatus('processing');
+          break;
 
-      case 'conversation.item.input_audio_transcription':
-        _handleTranscription(data);
-        break;
+        case 'conversation.item.input_audio_transcription':
+          _handleTranscription(data);
+          break;
 
-      case 'conversation.item.input_audio_transcription.completed':
-        _completeTranscription(data);
-        break;
+        case 'conversation.item.input_audio_transcription.completed':
+          _completeTranscription(data);
+          break;
 
-      case 'response.audio_transcript.delta':
-        _handleResponseDelta(data);
-        break;
+        case 'response.audio_transcript.delta':
+          _handleResponseDelta(data);
+          break;
 
-      case 'response.audio_transcript.done':
-        _completeResponse();
-        break;
+        case 'response.audio_transcript.done':
+          _completeResponse();
+          break;
+      }
+
+      // 대화 업데이트 알림
+      onConversationUpdated?.call(_conversation);
+    } catch (e) {
+      print('Error handling data channel message: $e');
+      // 에러 발생 시에도 대화 업데이트 알림
+      onConversationUpdated?.call(_conversation);
     }
-
-    // 대화 업데이트 알림
-    onConversationUpdated?.call(_conversation);
   }
 
   /// 입력 시작 처리
@@ -217,12 +223,27 @@ class ConversationManager {
 
   /// 입력 정지 처리
   void _isInputStopped() {
-    _updateEphemeralMessage('', status: 'processing');
+    // 텍스트는 그대로 유지하고 상태만 변경
+    _updateEphemeralMessageStatus('processing');
+  }
+
+  /// 메시지 상태만 업데이트하는 헬퍼 함수
+  void _updateEphemeralMessageStatus(String? status) {
+    if (_ephemeralMessageId == null) return;
+
+    final index =
+        _conversation.indexWhere((msg) => msg.id == _ephemeralMessageId);
+    if (index != -1) {
+      _conversation[index] = _conversation[index].copyWith(
+        status: status,
+      );
+    }
   }
 
   /// 음성 텍스트 변환 처리
   void _handleTranscription(Map<String, dynamic> data) {
-    final transcript = data['transcript'] ?? data['text'] ?? '';
+    final transcript =
+        (data['transcript'] ?? data['text'] ?? '').toString().trim();
     if (transcript.isNotEmpty) {
       _updateEphemeralMessage(
         transcript,
@@ -234,7 +255,7 @@ class ConversationManager {
 
   /// 음성 텍스트 변환 완료 처리
   void _completeTranscription(Map<String, dynamic> data) {
-    final transcript = data['transcript'] as String? ?? '';
+    final transcript = (data['transcript'] as String? ?? '').trim();
     if (transcript.isNotEmpty) {
       _updateEphemeralMessage(
         transcript,
@@ -287,10 +308,11 @@ class ConversationManager {
     final index =
         _conversation.indexWhere((msg) => msg.id == _ephemeralMessageId);
     if (index != -1) {
-      _conversation[index] = _conversation[index].copyWith(
-        text: text ?? '',
-        isFinal: isFinal ?? false,
-        status: status,
+      final currentMessage = _conversation[index];
+      _conversation[index] = currentMessage.copyWith(
+        text: text ?? currentMessage.text, // text가 null이면 기존 텍스트 유지
+        isFinal: isFinal ?? currentMessage.isFinal, // isFinal이 null이면 기존 값 유지
+        status: status, // status는 null 포함 항상 업데이트
       );
     }
   }
