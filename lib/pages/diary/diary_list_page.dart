@@ -103,30 +103,6 @@ class _DiaryListPageState extends State<DiaryListPage> {
           ),
           elevation: 0,
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => DiaryDetailPage(
-                      journal: Journal(
-                        id: '',
-                        title: '',
-                        content: '',
-                        emotion: '',
-                        createdAt: DateTime.now(),
-                        keywords: [],
-                        conversationId: '',
-                      ),
-                    ),
-                  ),
-                ).then((_) => _loadJournals());
-              },
-              tooltip: context.tr('createNewJournal'),
-            ),
-          ],
         ),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
