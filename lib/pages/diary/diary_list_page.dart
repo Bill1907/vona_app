@@ -39,18 +39,13 @@ class _DiaryListPageState extends State<DiaryListPage> {
   }
 
   Future<void> _loadJournals() async {
-    print('Starting to load journals in DiaryListPage');
     try {
-      print('Calling JournalService.getJournals()');
       final journals = await JournalService.getJournals();
-      print('Received ${journals.length} journals from service');
       setState(() {
         _journals = journals;
         _isLoading = false;
       });
-      print('State updated with journals');
     } catch (e) {
-      print('Error loading journals: $e');
       setState(() {
         _isLoading = false;
       });
@@ -103,30 +98,6 @@ class _DiaryListPageState extends State<DiaryListPage> {
           ),
           elevation: 0,
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => DiaryDetailPage(
-                      journal: Journal(
-                        id: '',
-                        title: '',
-                        content: '',
-                        emotion: '',
-                        createdAt: DateTime.now(),
-                        keywords: [],
-                        conversationId: '',
-                      ),
-                    ),
-                  ),
-                ).then((_) => _loadJournals());
-              },
-              tooltip: context.tr('createNewJournal'),
-            ),
-          ],
         ),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())

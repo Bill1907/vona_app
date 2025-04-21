@@ -7,6 +7,7 @@ import '../supabase/journal_service.dart';
 import '../supabase/conversation_service.dart';
 import '../network/http_service.dart';
 import 'webrtc_service.dart';
+import '../crypt/encrypt.dart';
 
 /// 대화 상태 변경 콜백 타입
 typedef ConversationStateCallback = void Function(bool isActive);
@@ -21,6 +22,9 @@ typedef ConversationUpdateCallback = void Function(
 class ConversationManager {
   // WebRTC 서비스
   final WebRTCService _webRTCService;
+
+  // 암호화 서비스
+  final EncryptService? _encryptService;
 
   // 대화 관련 상태
   final List<ConversationMessage> _conversation = [];
@@ -63,7 +67,8 @@ class ConversationManager {
     this.onSaved,
     this.onError,
     String? languageCode,
-  }) {
+    EncryptService? encryptService,
+  }) : _encryptService = encryptService {
     // 언어 코드가 제공되면 설정
     if (languageCode != null) {
       _languageCode = languageCode;
@@ -336,9 +341,17 @@ class ConversationManager {
       final conversationData =
           _conversation.map((msg) => msg.toJson()).toList();
 
+      final ivStringForConversation = _encryptService!.createIV();
+      // 대화 암호화 처리
+      final encryptedConversationData = _encryptService.encryptData(
+        jsonEncode(conversationData),
+        ivStringForConversation,
+      );
+
       // 대화 저장
       final conversationId = await ConversationService.createConversation(
-        conversationData,
+        encryptedConversationData,
+        ivStringForConversation,
       );
 
       // 저널 생성
@@ -375,9 +388,28 @@ class ConversationManager {
                 ? utf8.decode(utf8.encode(data['title'] as String))
                 : 'Untitled Journal';
 
-            final content = data['content'] != null
+            String content = data['content'] != null
                 ? utf8.decode(utf8.encode(data['content'] as String))
                 : '';
+
+            // 암호화 관련 변수 초기화
+            String? ivString;
+            String? encryptedContent;
+
+            // 암호화 서비스가 사용 가능하면 콘텐츠 암호화
+            if (_encryptService != null) {
+              try {
+                ivString = _encryptService!.createIV();
+                encryptedContent =
+                    _encryptService!.encryptData(content, ivString);
+                // 암호화 성공 시 암호화된 콘텐츠로 설정
+                content = encryptedContent;
+              } catch (e) {
+                print('암호화 실패: $e');
+                // 암호화 실패 시 원본 콘텐츠 사용 (암호화되지 않음)
+                ivString = null;
+              }
+            }
 
             // 저널 객체 생성
             final journal = Journal(
@@ -386,6 +418,7 @@ class ConversationManager {
               title: title,
               content: content,
               conversationId: conversationId,
+              iv: ivString, // IV 값 저장
             );
 
             // 저널 저장

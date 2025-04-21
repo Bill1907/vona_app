@@ -2,9 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:io' show Platform;
+import 'package:provider/provider.dart';
 
 import '../../core/supabase/instruction_service.dart';
 import '../../core/language/extensions.dart';
@@ -12,6 +10,8 @@ import '../../core/services/webrtc_service.dart';
 import '../../core/services/audio_service.dart';
 import '../../core/services/conversation_manager.dart';
 import '../../core/models/conversation_message.dart';
+import '../../core/crypt/encrypt.dart';
+
 import 'widgets/connection_status_widget.dart';
 import 'widgets/conversation_interface_widget.dart';
 
@@ -98,8 +98,8 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
   bool _isOutputActive = false;
   bool _isConversationStarted = false;
   bool _isSaving = false;
-  InterstitialAd? _interstitialAd;
-  bool _isInterstitialAdReady = false;
+  // InterstitialAd? _interstitialAd;
+  // bool _isInterstitialAdReady = false;
 
   AnimationController? _animationController;
 
@@ -108,7 +108,7 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
     super.initState();
     _setupServices();
     _initializeSession();
-    _loadInterstitialAd();
+    // _loadInterstitialAd();
 
     _status = 'initializing';
   }
@@ -136,7 +136,7 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
     _webRTCService.dispose();
     _conversationManager.dispose();
     _audioElement.dispose();
-    _interstitialAd?.dispose();
+    // _interstitialAd?.dispose();
     super.dispose();
   }
 
@@ -152,12 +152,16 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
       onOutputStatusChanged: _handleOutputStatusChanged,
     );
 
+    // Get EncryptService from Provider
+    final encryptService = Provider.of<EncryptService>(context, listen: false);
+
     _conversationManager = ConversationManager(
       _webRTCService,
       onConversationStateChanged: _handleConversationStateChanged,
       onConversationUpdated: _handleConversationUpdated,
       onSaved: _handleConversationSaved,
       onError: _handleConversationError,
+      encryptService: encryptService,
     );
   }
 
@@ -264,23 +268,25 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
       _isSaving = true;
     });
 
-    if (_isInterstitialAdReady && _interstitialAd != null) {
-      _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
-        onAdDismissedFullScreenContent: (ad) {
-          ad.dispose();
-          _loadInterstitialAd();
-          _saveConversationToServer();
-        },
-        onAdFailedToShowFullScreenContent: (ad, error) {
-          ad.dispose();
-          _loadInterstitialAd();
-          _saveConversationToServer();
-        },
-      );
-      await _interstitialAd!.show();
-    } else {
-      _saveConversationToServer();
-    }
+    _saveConversationToServer();
+
+    // if (_isInterstitialAdReady && _interstitialAd != null) {
+    //   _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+    //     onAdDismissedFullScreenContent: (ad) {
+    //       ad.dispose();
+    //       _loadInterstitialAd();
+    //       _saveConversationToServer();
+    //     },
+    //     onAdFailedToShowFullScreenContent: (ad, error) {
+    //       ad.dispose();
+    //       _loadInterstitialAd();
+    //       _saveConversationToServer();
+    //     },
+    //   );
+    //   await _interstitialAd!.show();
+    // } else {
+    //   _saveConversationToServer();
+    // }
   }
 
   Future<void> _saveConversationToServer() async {
@@ -410,26 +416,26 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
     await _initializeSession();
   }
 
-  void _loadInterstitialAd() {
-    final String adUnitId = Platform.isAndroid
-        ? dotenv.get('GOOGLE_ADMOB_INTERSTITIAL_ANDROID_ID')
-        : dotenv.get('GOOGLE_ADMOB_INTERSTITIAL_IOS_ID');
+  // void _loadInterstitialAd() {
+  //   final String adUnitId = Platform.isAndroid
+  //       ? dotenv.get('GOOGLE_ADMOB_INTERSTITIAL_ANDROID_ID')
+  //       : dotenv.get('GOOGLE_ADMOB_INTERSTITIAL_IOS_ID');
 
-    InterstitialAd.load(
-      adUnitId: adUnitId,
-      request: const AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) {
-          _interstitialAd = ad;
-          _isInterstitialAdReady = true;
-        },
-        onAdFailedToLoad: (error) {
-          print('Interstitial ad failed to load: ${error.message}');
-          _isInterstitialAdReady = false;
-        },
-      ),
-    );
-  }
+  //   InterstitialAd.load(
+  //     adUnitId: adUnitId,
+  //     request: const AdRequest(),
+  //     adLoadCallback: InterstitialAdLoadCallback(
+  //       onAdLoaded: (ad) {
+  //         _interstitialAd = ad;
+  //         _isInterstitialAdReady = true;
+  //       },
+  //       onAdFailedToLoad: (error) {
+  //         print('Interstitial ad failed to load: ${error.message}');
+  //         _isInterstitialAdReady = false;
+  //       },
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {

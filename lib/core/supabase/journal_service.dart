@@ -37,6 +37,7 @@ class JournalService {
               'updated_at':
                   json['updated_at'] ?? DateTime.now().toIso8601String(),
               'user_id': json['user_id'] ?? '',
+              'iv': json['iv'],
             };
 
             final journal = Journal.fromJson(safeJson);
@@ -52,7 +53,6 @@ class JournalService {
         .cast<Journal>() // Cast the non-null entries to Journal
         .toList();
 
-    print('Returning ${journals.length} valid journals');
     return journals;
   }
 
@@ -64,8 +64,6 @@ class JournalService {
     final DateTime now = DateTime.now();
     final DateTime cutoffDate = now.subtract(Duration(days: days));
     final String cutoffDateStr = cutoffDate.toIso8601String();
-
-    print('Fetching journals since: $cutoffDateStr');
 
     final response = await _client
         .from('journals')
@@ -96,6 +94,7 @@ class JournalService {
               'updated_at':
                   json['updated_at'] ?? DateTime.now().toIso8601String(),
               'user_id': json['user_id'] ?? '',
+              'iv': json['iv'],
             };
 
             final journal = Journal.fromJson(safeJson);
@@ -230,6 +229,7 @@ class JournalService {
               'updated_at':
                   json['updated_at'] ?? DateTime.now().toIso8601String(),
               'user_id': json['user_id'] ?? '',
+              'iv': json['iv'],
             };
 
             print('Safe conversation JSON prepared: $safeJson');
@@ -250,5 +250,21 @@ class JournalService {
 
     print('Returning ${journals.length} valid conversation journals');
     return journals;
+  }
+
+  static Future<void> batchUpdateJournal(List<Journal> journals) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) throw Exception('User not authenticated');
+
+    // upsert 메서드를 사용하여 일괄 업데이트
+    final journalData = journals.map((journal) {
+      // user_id를 포함시켜 올바른 레코드가 업데이트되도록 함
+      return {
+        ...journal.toJson(),
+        'user_id': userId,
+      };
+    }).toList();
+
+    await _client.from('journals').upsert(journalData, onConflict: 'id');
   }
 }

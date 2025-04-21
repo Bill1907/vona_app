@@ -6,17 +6,17 @@ class Conversation {
   final String? userId;
   final String contents; // JSON 형태의 문자열로 저장
   final DateTime createdAt;
-  final DateTime updatedAt;
+  final String iv;
 
   Conversation({
     String? id,
     this.userId,
     required this.contents,
     DateTime? createdAt,
-    DateTime? updatedAt,
+    String? iv,
   })  : id = id ?? const Uuid().v4(),
         createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now();
+        iv = iv ?? '';
 
   // JSON 직렬화
   Map<String, dynamic> toJson() => {
@@ -24,7 +24,7 @@ class Conversation {
         'user_id': userId,
         'contents': contents,
         'created_at': createdAt.toIso8601String(),
-        'updated_at': updatedAt.toIso8601String(),
+        'iv': iv,
       };
 
   // JSON 역직렬화
@@ -39,9 +39,7 @@ class Conversation {
         createdAt: json['created_at'] != null
             ? DateTime.parse(json['created_at'].toString())
             : DateTime.now(),
-        updatedAt: json['updated_at'] != null
-            ? DateTime.parse(json['updated_at'].toString())
-            : DateTime.now(),
+        iv: json['iv']?.toString() ?? '',
       );
 
   // contents를 Map으로 변환
@@ -54,13 +52,13 @@ class Conversation {
     String? userId,
     String? contents,
     DateTime? createdAt,
-    DateTime? updatedAt,
+    String? iv,
   }) =>
       Conversation(
         id: id ?? this.id,
         userId: userId ?? this.userId,
         contents: contents ?? this.contents,
         createdAt: createdAt ?? this.createdAt,
-        updatedAt: updatedAt ?? this.updatedAt,
+        iv: iv ?? this.iv,
       );
 }

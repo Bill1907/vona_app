@@ -112,17 +112,6 @@ class SupabaseClientWrapper {
     return await client.from('profiles').select().eq('id', userId).single();
   }
 
-  static Future<void> updateProfile({
-    required String userId,
-    required String username,
-  }) async {
-    await client.from('profiles').upsert({
-      'id': userId,
-      'username': username,
-      'updated_at': DateTime.now().toIso8601String(),
-    });
-  }
-
   static Future<void> signOut() async {
     await client.auth.signOut();
   }
