@@ -23,19 +23,18 @@ class ConversationService {
     return conversations;
   }
 
-  static Future<String> createConversation(List<dynamic> messages) async {
+  static Future<String> createConversation(
+      String encryptedConversationData, String ivString) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) throw Exception('User not authenticated');
 
     final id = const Uuid().v4();
 
-    // Convert messages to JSON string
-    final jsonString = jsonEncode(messages);
-
     final conversationData = {
       'id': id,
       'user_id': userId,
-      'contents': jsonString,
+      'contents': encryptedConversationData,
+      'iv': ivString,
       'created_at': DateTime.now().toIso8601String(),
     };
 
@@ -112,5 +111,22 @@ class ConversationService {
         .delete()
         .eq('id', id)
         .eq('user_id', userId);
+  }
+
+  static Future<void> batchUpdateConversation(
+      List<Conversation> conversations) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) throw Exception('User not authenticated');
+
+    final conversationData = conversations.map((conversation) {
+      return {
+        ...conversation.toJson(),
+        'user_id': userId,
+      };
+    }).toList();
+
+    await _client
+        .from('conversations')
+        .upsert(conversationData, onConflict: 'id');
   }
 }

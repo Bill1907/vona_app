@@ -29,6 +29,10 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'pages/settings/language_settings_page.dart';
 import 'utils/notification_example.dart';
 import 'firebase_options.dart';
+import 'core/supabase/profile_service.dart';
+import 'core/crypt/encrypt.dart';
+import 'core/supabase/journal_service.dart';
+import 'core/supabase/conversation_service.dart';
 
 // 백그라운드 메시지 핸들러 설정
 @pragma('vm:entry-point')
@@ -63,9 +67,6 @@ Future<void> main() async {
 
   // 시스템 언어 설정 확인 (non-deprecated method)
   final Locale systemLocale = PlatformDispatcher.instance.locale;
-  print(
-      'System locale: ${systemLocale.languageCode}${systemLocale.countryCode != null ? '_${systemLocale.countryCode}' : ''}');
-
   // 웹에서 딥링크 처리
   if (kIsWeb) {
     final url = getWebUrl();
@@ -93,6 +94,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeService(prefs)),
         ChangeNotifierProvider(
             create: (_) => LanguageService(prefs, systemLocale)),
+        Provider<EncryptService>(create: (_) => EncryptService()),
       ],
       child: Consumer2<ThemeService, LanguageService>(
         builder: (context, themeService, languageService, _) {
@@ -207,6 +209,8 @@ class _AuthStateScreenState extends State<AuthStateScreen> {
     // 초기 상태 확인
     _checkCurrentSession();
 
+    _encryptionUserData();
+
     _handleIncomingLinks();
   }
 
@@ -228,15 +232,31 @@ class _AuthStateScreenState extends State<AuthStateScreen> {
     try {
       final session = AuthService.currentSession;
 
-      print('Current session: $session');
-
       if (!mounted) return;
 
       if (session != null) {
+        // Retrieve EncryptService from Provider
+        final encryptService = context.read<EncryptService>();
+
         _navigateToHome();
         // 기존 세션이 있는 경우 일기 알림 초기화
         await _pushNotificationService.initialize();
         await _pushNotificationService.initializeDiaryReminders();
+
+        final profile = await ProfileService.getProfile(session.user.id);
+
+        if (profile['encryption_key'] != null) {
+          encryptService.init(profile['encryption_key']);
+        } else {
+          // TODO: 추후 삭제 예정
+          await ProfileService.updateEncryptionKey(
+              userId: session.user.id,
+              encryptionKey: encryptService.createUserKey(session.user.id));
+
+          final encryptionUpdateResult =
+              await ProfileService.getProfile(session.user.id);
+          encryptService.init(encryptionUpdateResult['encryption_key']);
+        }
       } else {
         _navigateToAuth();
       }
@@ -244,6 +264,87 @@ class _AuthStateScreenState extends State<AuthStateScreen> {
       if (mounted) {
         _navigateToAuth();
       }
+    }
+  }
+
+  // TODO: 추후 삭제 예정
+  // 초기에 사용자의 journal data, conversation data 암호화 해서 업데이트
+  Future<void> _encryptionUserData() async {
+    try {
+      final session = AuthService.currentSession;
+      if (session == null) {
+        return;
+      }
+
+      final encryptService = context.read<EncryptService>();
+      final profile = await ProfileService.getProfile(session.user.id);
+
+      // encryption_key를 Key 타입으로 변환
+      final encryptionKeyString = profile['encryption_key'] as String?;
+      if (encryptionKeyString == null || encryptionKeyString.isEmpty) {
+        return;
+      }
+      encryptService.init(encryptionKeyString);
+
+      final journalData = await JournalService.getJournals();
+      final conversationData = await ConversationService.getConversations();
+
+      // 암호화 해서 업데이트
+      final encryptedJournalData = journalData.map((journal) {
+        // IV가 이미 존재하는지 확인 (이미 암호화되어 있는지 여부)
+        if (journal.iv != null && journal.iv!.isNotEmpty) {
+          return journal; // 이미 암호화된 항목은 그대로 반환
+        }
+
+        // Create a unique IV for each journal entry (as base64 string)
+        final ivString = encryptService.createIV();
+
+        final encryptedContent = encryptService.encryptData(
+            journal.content, ivString); // Pass the IV string directly
+
+        // IV와 함께 저장하여 나중에 복호화할 수 있도록 함
+        return journal.copyWith(
+          content: encryptedContent,
+          iv: ivString, // IV 값 저장
+        );
+      }).toList(); // Convert Iterable to List
+
+      final encryptedConversationData = conversationData.map((conversation) {
+        // IV가 이미 존재하는지 확인 (이미 암호화되어 있는지 여부)
+        if (conversation.iv != null && conversation.iv.isNotEmpty) {
+          return conversation; // 이미 암호화된 항목은 그대로 반환
+        }
+
+        final ivString = encryptService.createIV();
+        final encryptedContent =
+            encryptService.encryptData(conversation.contents, ivString);
+        return conversation.copyWith(contents: encryptedContent, iv: ivString);
+      }).toList();
+      // 암호화된 항목이 있는지 확인
+      final encryptedCount = encryptedJournalData
+          .where((j) =>
+              journalData.firstWhere((original) => original.id == j.id).iv !=
+              j.iv)
+          .length;
+
+      final encryptedConversationCount = encryptedConversationData
+          .where((c) =>
+              conversationData
+                  .firstWhere((original) => original.id == c.id)
+                  .iv !=
+              c.iv)
+          .length;
+
+      if (encryptedCount > 0 || encryptedConversationCount > 0) {
+        await JournalService.batchUpdateJournal(encryptedJournalData);
+        await ConversationService.batchUpdateConversation(
+            encryptedConversationData);
+      } else {
+        print('No journals needed encryption, skipping update');
+      }
+    } catch (e, stacktrace) {
+      print('Error during data encryption: $e');
+      print('Stack trace: $stacktrace');
     }
   }
 

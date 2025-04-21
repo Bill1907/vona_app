@@ -8,6 +8,7 @@ class Journal {
   final String title;
   final String content;
   final String conversationId;
+  final String? iv;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -19,6 +20,7 @@ class Journal {
     required this.title,
     required this.content,
     required this.conversationId,
+    this.iv,
     DateTime? createdAt,
     DateTime? updatedAt,
   })  : id = id ?? const Uuid().v4(),
@@ -34,6 +36,7 @@ class Journal {
         'title': title,
         'content': content,
         'conversation_id': conversationId,
+        'iv': iv,
         'created_at': createdAt.toIso8601String(),
         'updated_at': updatedAt.toIso8601String(),
       };
@@ -47,6 +50,7 @@ class Journal {
         title: json['title'] as String,
         content: json['content'] as String,
         conversationId: json['conversation_id'] as String,
+        iv: json['iv'] as String?,
         createdAt: DateTime.parse(json['created_at'] as String),
         updatedAt: DateTime.parse(json['updated_at'] as String),
       );
@@ -60,6 +64,7 @@ class Journal {
     String? title,
     String? content,
     String? conversationId,
+    String? iv,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) =>
@@ -71,6 +76,7 @@ class Journal {
         title: title ?? this.title,
         content: content ?? this.content,
         conversationId: conversationId ?? this.conversationId,
+        iv: iv ?? this.iv,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
       );

@@ -19,6 +19,17 @@ class ProfileService {
     });
   }
 
+  static Future<void> updateEncryptionKey({
+    required String userId,
+    required String encryptionKey,
+  }) async {
+    await _client.from('profiles').upsert({
+      'id': userId,
+      'encryption_key': encryptionKey,
+      'updated_at': DateTime.now().toIso8601String(),
+    });
+  }
+
   static Future<void> updateAvatar({
     required String userId,
     required String avatarUrl,
