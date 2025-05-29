@@ -6,6 +6,7 @@ import 'diary/diary_list_page.dart';
 import 'profile/profile_settings_page.dart';
 import 'realtime/realtime_communication_page.dart';
 import '../core/language/extensions.dart';
+import 'events/event_list_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -24,6 +25,7 @@ class _HomePageState extends State<HomePage> {
     final List<Widget> pages = [
       const DiaryDashboardPage(),
       if (userId != null) RealtimeCommunicationPage(userId: userId),
+      const EventListPage(),
       const DiaryListPage(),
       const ProfileSettingsPage(),
     ];
@@ -83,6 +85,11 @@ class _HomePageState extends State<HomePage> {
               ),
               label: context.tr('voice'),
             ),
+          NavigationDestination(
+            icon: const Icon(Icons.calendar_today, color: Colors.grey),
+            selectedIcon: const Icon(Icons.calendar_today, color: Colors.white),
+            label: context.tr('events'),
+          ),
           NavigationDestination(
             icon: SvgPicture.asset(
               'assets/icons/book_icon.svg',

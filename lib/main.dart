@@ -5,8 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_native_timezone/flutter_native_timezone.dart';
-// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
+
 import 'core/supabase/client.dart';
 import 'core/supabase/auth_service.dart';
 import 'core/theme/theme_service.dart';
@@ -33,6 +33,9 @@ import 'core/supabase/profile_service.dart';
 import 'core/crypt/encrypt.dart';
 import 'core/supabase/journal_service.dart';
 import 'core/supabase/conversation_service.dart';
+import 'core/providers/event_provider.dart';
+import 'pages/events/event_list_page.dart';
+import 'pages/events/event_form_page.dart';
 
 // 백그라운드 메시지 핸들러 설정
 @pragma('vm:entry-point')
@@ -60,7 +63,7 @@ Future<void> main() async {
 
   // Initialize timezone
   try {
-    await FlutterNativeTimezone.getLocalTimezone();
+    await FlutterTimezone.getLocalTimezone();
   } catch (e) {
     print('Error initializing timezone: $e');
   }
@@ -95,6 +98,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
             create: (_) => LanguageService(prefs, systemLocale)),
         Provider<EncryptService>(create: (_) => EncryptService()),
+        ChangeNotifierProvider(create: (_) => EventProvider()),
       ],
       child: Consumer2<ThemeService, LanguageService>(
         builder: (context, themeService, languageService, _) {
@@ -153,6 +157,8 @@ class MyApp extends StatelessWidget {
                   ),
               '/settings/language': (context) => const LanguageSettingsPage(),
               '/notification-example': (context) => const NotificationExample(),
+              '/events': (context) => const EventListPage(),
+              '/events/create': (context) => const EventFormPage(),
               // '/journals': (context) => const DiaryListPage(),
             },
           );

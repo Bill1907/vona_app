@@ -3,7 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
-import 'package:flutter_native_timezone/flutter_native_timezone.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 
 class PushNotificationService {
   static final PushNotificationService _instance =
@@ -180,8 +180,7 @@ class PushNotificationService {
   Future<void> _initializeTimeZone() async {
     try {
       tz_data.initializeTimeZones();
-      final String timeZoneName =
-          await FlutterNativeTimezone.getLocalTimezone();
+      final String timeZoneName = await FlutterTimezone.getLocalTimezone();
       tz.setLocalLocation(tz.getLocation(timeZoneName));
     } catch (e) {
       print('Error initializing timezone: $e');

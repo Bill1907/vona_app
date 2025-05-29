@@ -41,15 +41,17 @@ class _DiaryListPageState extends State<DiaryListPage> {
   Future<void> _loadJournals() async {
     try {
       final journals = await JournalService.getJournals();
-      setState(() {
-        _journals = journals;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
       if (mounted) {
+        setState(() {
+          _journals = journals;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(context.tr('failedToDeleteJournal'))),
         );

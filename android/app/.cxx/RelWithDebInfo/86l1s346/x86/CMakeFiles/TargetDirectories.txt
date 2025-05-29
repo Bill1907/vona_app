@@ -1,0 +1,2 @@
+/Users/boseongkim/development/vona/vona_app/android/app/.cxx/RelWithDebInfo/86l1s346/x86/CMakeFiles/edit_cache.dir
+/Users/boseongkim/development/vona/vona_app/android/app/.cxx/RelWithDebInfo/86l1s346/x86/CMakeFiles/rebuild_cache.dir

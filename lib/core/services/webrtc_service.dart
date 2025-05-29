@@ -6,6 +6,7 @@ import 'package:flutter_webrtc/src/native/audio_management.dart';
 import 'package:http/http.dart' as http;
 import '../network/http_service.dart';
 import '../models/webrtc_error.dart';
+import '../models/function_tool.dart';
 
 /// WebRTC 연결 상태 변경 콜백 타입
 typedef WebRTCConnectionStateCallback = void Function(String state);
@@ -294,18 +295,37 @@ class WebRTCService {
       // 오류 무시
     }
 
+    // **강화된 데이터 채널 상태 추적**
+    print('Configuring data channel: ${channel.label}');
+    print('Initial data channel state: ${channel.state}');
+
     // 데이터 채널 상태 변경 이벤트 처리
     channel.onDataChannelState = (RTCDataChannelState state) {
       if (_isDisposing) {
         return;
       }
 
+      print('=== DATA CHANNEL STATE CHANGE ===');
+      print('Previous state: $_isDataChannelOpen');
+      print('New state: $state');
+      print('Timestamp: ${DateTime.now().toIso8601String()}');
+
+      final wasOpen = _isDataChannelOpen;
       _isDataChannelOpen = state == RTCDataChannelState.RTCDataChannelOpen;
 
-      if (_isDataChannelOpen) {
+      if (_isDataChannelOpen && !wasOpen) {
+        print('✅ Data channel OPENED');
         _updateConnectionState('Data channel opened');
         onDataChannelOpened?.call();
+      } else if (!_isDataChannelOpen && wasOpen) {
+        print('❌ Data channel CLOSED (was open)');
+        print('Investigating closure reason...');
+        _investigateConnectionLoss();
+      } else if (!_isDataChannelOpen) {
+        print('⚠️ Data channel remains closed: $state');
       }
+
+      print('=== END STATE CHANGE ===');
     };
 
     // 데이터 채널 메시지 처리
@@ -315,22 +335,102 @@ class WebRTCService {
       }
 
       try {
+        print(
+            '📨 Received message: ${message.text.substring(0, message.text.length > 100 ? 100 : message.text.length)}...');
         final data = jsonDecode(message.text);
         onMessageReceived?.call(data);
       } catch (e) {
-        // 오류 무시
+        print('❌ Failed to parse message: $e');
       }
     };
+  }
+
+  /// 연결 손실 원인 조사
+  void _investigateConnectionLoss() {
+    print('🔍 INVESTIGATING CONNECTION LOSS:');
+    print('PeerConnection state: ${_peerConnection?.connectionState}');
+    print('PeerConnection ice state: ${_peerConnection?.iceConnectionState}');
+    print('Data channel state: ${_dataChannel?.state}');
+    print('Is disposing: $_isDisposing');
+
+    // 타이머를 설정해서 일정 시간 후 재연결 시도
+    Future.delayed(Duration(milliseconds: 2000), () {
+      if (!_isDataChannelOpen && !_isDisposing) {
+        print('Attempting automatic reconnection after connection loss...');
+        _attemptAutomaticRecovery();
+      }
+    });
+  }
+
+  /// 자동 복구 시도
+  Future<void> _attemptAutomaticRecovery() async {
+    print('🔄 AUTOMATIC RECOVERY ATTEMPT');
+
+    try {
+      // PeerConnection 상태 확인
+      if (_peerConnection?.connectionState ==
+          RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
+        print('PeerConnection is still connected, data channel issue only');
+
+        // 새 데이터 채널 생성 시도
+        if (_dataChannel?.state != RTCDataChannelState.RTCDataChannelOpen) {
+          print('Attempting to recreate data channel...');
+          await _recreateDataChannel();
+        }
+      } else {
+        print('PeerConnection also has issues, full reconnection needed');
+        // 전체 재연결은 상위 레벨에서 처리하도록 콜백 호출
+        onConnectionStateChanged?.call('NeedsReconnection');
+      }
+    } catch (e) {
+      print('❌ Automatic recovery failed: $e');
+    }
+  }
+
+  /// 데이터 채널 재생성
+  Future<void> _recreateDataChannel() async {
+    try {
+      if (_peerConnection == null) {
+        print('Cannot recreate data channel: PeerConnection is null');
+        return;
+      }
+
+      print('Creating new data channel...');
+      final dataChannelInit = RTCDataChannelInit()
+        ..ordered = true
+        ..protocol = 'oai-events';
+
+      final newDataChannel = await _peerConnection!.createDataChannel(
+        'oai-events',
+        dataChannelInit,
+      );
+
+      // 이전 데이터 채널 정리
+      try {
+        _dataChannel?.close();
+      } catch (e) {
+        print('Error closing old data channel: $e');
+      }
+
+      _dataChannel = newDataChannel;
+      _configureDataChannel(_dataChannel!);
+
+      print('New data channel created and configured');
+    } catch (e) {
+      print('❌ Failed to recreate data channel: $e');
+    }
   }
 
   /// 메시지 전송
   bool sendMessage(dynamic message) {
     try {
       if (_isDisposing) {
+        print('SendMessage failed: Service is disposing');
         return false;
       }
 
       if (_dataChannel == null) {
+        print('SendMessage failed: Data channel is null');
         return false;
       }
 
@@ -338,35 +438,64 @@ class WebRTCService {
       final RTCDataChannelState? state = _dataChannel?.state;
 
       if (state != RTCDataChannelState.RTCDataChannelOpen) {
+        print(
+            'SendMessage failed: Data channel state is $state (expected: RTCDataChannelOpen)');
         return false;
       }
 
       // JSON으로 변환
       final messageStr = message is String ? message : jsonEncode(message);
 
+      // 메시지 크기 확인
+      final messageSize = messageStr.length;
+      print('Sending message of size: $messageSize bytes');
+
+      if (messageSize > 16384) {
+        // 16KB 제한 (일반적인 WebRTC 제한)
+        print(
+            'Warning: Message size ($messageSize) exceeds recommended limit (16384 bytes)');
+      }
+
       // 메시지 전송
       try {
         _dataChannel?.send(RTCDataChannelMessage(messageStr));
+        print('Message sent successfully');
         return true;
       } catch (e) {
+        print('SendMessage failed during transmission: $e');
         return false;
       }
     } catch (e) {
+      print('SendMessage failed with exception: $e');
       return false;
     }
   }
 
-  /// 세션 세팅 메시지 전송
-  bool sendSessionUpdate() {
-    return sendMessage({
+  /// 세션 세팅 메시지 전송 (Function Tools 포함)
+  bool sendSessionUpdate({bool includeCalendarTools = true}) {
+    final Map<String, dynamic> sessionData = {
       "type": "session.update",
       "session": {
         "modalities": ["text", "audio"],
-        "tools": [],
+        "tools": includeCalendarTools ? CalendarFunctionTools.toJsonList() : [],
         "input_audio_transcription": {
           "model": "whisper-1",
         },
       },
+    };
+
+    return sendMessage(sessionData);
+  }
+
+  /// Function call 응답 전송
+  bool sendFunctionCallResult(String callId, dynamic result) {
+    return sendMessage({
+      "type": "conversation.item.create",
+      "item": {
+        "type": "function_call_output",
+        "call_id": callId,
+        "output": jsonEncode(result),
+      }
     });
   }
 
@@ -471,5 +600,20 @@ class WebRTCService {
   void dispose() {
     cleanup();
     _audioElement = null;
+  }
+
+  /// 연결 진단 정보 반환
+  Map<String, dynamic> getConnectionDiagnostics() {
+    return {
+      'dataChannelOpen': _isDataChannelOpen,
+      'dataChannelState': _dataChannel?.state.toString(),
+      'peerConnectionState': _peerConnection?.connectionState.toString(),
+      'iceConnectionState': _peerConnection?.iceConnectionState.toString(),
+      'connectionState': _connectionState,
+      'isDisposing': _isDisposing,
+      'hasLocalStream': _localStream != null,
+      'hasDataChannel': _dataChannel != null,
+      'hasPeerConnection': _peerConnection != null,
+    };
   }
 }

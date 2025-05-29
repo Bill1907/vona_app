@@ -12,6 +12,10 @@
         android:label="vona_app"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
+        <!-- AdMob App ID -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-7913636156841478~4502923575"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

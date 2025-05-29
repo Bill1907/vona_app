@@ -252,6 +252,24 @@ class _RealtimeCommunicationPageState extends State<RealtimeCommunicationPage> {
   void _handleConversationUpdated(List<ConversationMessage> messages) {
     if (mounted) {
       setState(() {});
+
+      // Function Tools 상태 진단 (디버깅용)
+      if (messages.isNotEmpty) {
+        _debugFunctionToolsStatus();
+      }
+    }
+  }
+
+  /// Function Tools 상태 디버깅
+  void _debugFunctionToolsStatus() {
+    try {
+      final diagnostics = _conversationManager.getFunctionToolsDiagnostics();
+      print('🔧 FUNCTION TOOLS DIAGNOSTICS:');
+      diagnostics.forEach((key, value) {
+        print('  $key: $value');
+      });
+    } catch (e) {
+      print('❌ Failed to get function tools diagnostics: $e');
     }
   }
 
